@@ -1,0 +1,284 @@
+/* 全局样式 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', system-ui, sans-serif;
+    line-height: 1.6;
+}
+
+/* 背景图片 */
+.bg-minecraft {
+    background-image: url('https://p3-doubao-search-sign.byteimg.com/labis/image/4e945b173a90a7aff3e23f87c12e8795~tplv-be4g95zd3a-image.jpeg?lk3s=feb11e32&x-expires=1784794498&x-signature=DJpAXzWPxwNriA13kUx6ms4kxfs%3D');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+
+/* 文本阴影 */
+.text-shadow {
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.text-shadow-lg {
+    text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* 卡片悬停效果 */
+.card-hover {
+    transition: all 0.3s ease;
+}
+
+.card-hover:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* 按钮涟漪效果 */
+.btn-ripple {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-ripple::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.5);
+    opacity: 0;
+    border-radius: 100%;
+    transform: scale(1, 1) translate(-50%);
+    transform-origin: 50% 50%;
+}
+
+.btn-ripple:focus:not(:active)::after {
+    animation: ripple 1s ease-out;
+}
+
+@keyframes ripple {
+    0% {
+        transform: scale(0, 0);
+        opacity: 0.5;
+    }
+    20% {
+        transform: scale(25, 25);
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 0;
+        transform: scale(40, 40);
+    }
+}
+
+/* 加载动画 */
+.loading {
+    width: 48px;
+    height: 48px;
+    border: 5px solid #FFF;
+    border-bottom-color: transparent;
+    border-radius: 50%;
+    display: inline-block;
+    box-sizing: border-box;
+    animation: rotation 1s linear infinite;
+}
+
+@keyframes rotation {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* 立方体动画 */
+.cube-container {
+    perspective: 1000px;
+}
+
+.cube {
+    width: 40px;
+    height: 40px;
+    position: absolute;
+    transform-style: preserve-3d;
+    animation: cube-rotate 8s infinite linear;
+}
+
+.cube::before,
+.cube::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: rgba(76, 175, 80, 0.3);
+    border: 2px solid rgba(76, 175, 80, 0.5);
+    transform-style: preserve-3d;
+}
+
+.cube::before {
+    transform: translateZ(20px);
+}
+
+.cube::after {
+    transform: rotateY(90deg) translateZ(20px);
+}
+
+@keyframes cube-rotate {
+    0% {
+        transform: rotateX(0deg) rotateY(0deg);
+    }
+    100% {
+        transform: rotateX(360deg) rotateY(360deg);
+    }
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .cube {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .cube::before,
+    .cube::after {
+        border-width: 1px;
+    }
+    
+    .cube::before {
+        transform: translateZ(10px);
+    }
+    
+    .cube::after {
+        transform: rotateY(90deg) translateZ(10px);
+    }
+}
+
+/* 深色模式样式 */
+body.dark-mode {
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+}
+
+body.dark-mode .bg-white {
+    background-color: #2d2d2d;
+    color: #e0e0e0;
+}
+
+body.dark-mode .text-gray-600 {
+    color: #b0b0b0;
+}
+
+body.dark-mode .text-gray-500 {
+    color: #909090;
+}
+
+body.dark-mode .bg-gray-50 {
+    background-color: #262626;
+}
+
+body.dark-mode .border-gray-200 {
+    border-color: #404040;
+}
+
+body.dark-mode .shadow-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #4CAF50;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #45a049;
+}
+
+body.dark-mode ::-webkit-scrollbar-track {
+    background: #2d2d2d;
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb {
+    background: #555;
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb:hover {
+    background: #666;
+}
+
+/* 动画延迟类 */
+.delay-100 {
+    animation-delay: 100ms;
+}
+
+.delay-200 {
+    animation-delay: 200ms;
+}
+
+.delay-300 {
+    animation-delay: 300ms;
+}
+
+.delay-400 {
+    animation-delay: 400ms;
+}
+
+.delay-500 {
+    animation-delay: 500ms;
+}
+
+/* 隐藏类 */
+.hidden {
+    display: none;
+}
+
+/* 显示类 */
+.block {
+    display: block;
+}
+
+/* 淡入动画 */
+.fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 缩放动画 */
+.scale-in {
+    animation: scaleIn 0.3s ease-in-out;
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}

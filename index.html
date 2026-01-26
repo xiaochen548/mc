@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小晨的Minecraft资源站</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.baomitu.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- AOS 动画库 -->
+    <link href="https://cdn.baomitu.com/aos/2.3.4/aos.css" rel="stylesheet">
+    <script src="https://cdn.baomitu.com/aos/2.3.4/aos.js"></script>
+    <!-- GSAP 动画库 -->
+    <script src="https://cdn.baomitu.com/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.baomitu.com/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    
+    <!-- 自定义样式 -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4CAF50',
+                        secondary: '#2196F3',
+                        accent: '#FF9800',
+                        dark: '#2C3E50',
+                        light: '#ECF0F1'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    animation: {
+                        'float': 'float 3s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-light text-dark">
+    <!-- 导航栏 -->
+    <nav class="fixed top-0 left-0 w-full z-50 bg-dark bg-opacity-90 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/40c79d0150a040998d572f6f0a3e330d~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=2026012416144667E9BE73895EE7095690&rrcfp=f06b921b&x-expires=1771834516&x-signature=leNBQHm6pItCXPN%2FnY8u1oeRF78%3D" alt="Logo" class="h-10 w-10">
+                <span class="text-xl font-bold bg-gradient-to-r from-green-400 to-blue-500 bg-clip-text text-transparent">小晨のMC资源站</span>
+            </div>
+            <div class="hidden md:flex items-center space-x-4">
+                <!-- 搜索框 -->
+                <div class="relative">
+                    <input type="text" id="search-input" placeholder="搜索资源..." class="bg-gray-700 text-white px-4 py-1 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary w-40 md:w-64 transition-all duration-300">
+                    <button id="search-button" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white">
+                        <i class="fa fa-search"></i>
+                    </button>
+                </div>
+                
+                <!-- 主题切换 -->
+                <button id="theme-toggle" class="bg-gray-700 hover:bg-gray-600 text-white w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300">
+                    <i class="fa fa-moon-o"></i>
+                </button>
+                
+                <a href="index.html" class="text-primary font-bold">首页</a>
+                <a href="launchers.html" class="hover:text-primary transition-colors duration-300">启动器</a>
+                <a href="modpacks.html" class="hover:text-primary transition-colors duration-300">整合包</a>
+                <a href="mods.html" class="hover:text-primary transition-colors duration-300">模组</a>
+                <a href="maps.html" class="hover:text-primary transition-colors duration-300">地图</a>
+                <a href="introduction.html" class="hover:text-primary transition-colors duration-300">网站介绍</a>
+            </div>
+            <div class="md:hidden">
+                <div class="flex items-center space-x-2">
+                    <button id="theme-toggle-mobile" class="bg-gray-700 hover:bg-gray-600 text-white w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300">
+                        <i class="fa fa-moon-o"></i>
+                    </button>
+                    <button id="mobile-menu-button" class="text-white focus:outline-none">
+                        <i class="fa fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- 移动端菜单 -->
+        <div id="mobile-menu" class="hidden md:hidden bg-dark bg-opacity-95 w-full">
+            <div class="container mx-auto px-4 py-2 flex flex-col space-y-3">
+                <!-- 移动端搜索 -->
+                <div class="relative mb-2">
+                    <input type="text" placeholder="搜索资源..." class="bg-gray-700 text-white px-4 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary w-full">
+                    <button class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white">
+                        <i class="fa fa-search"></i>
+                    </button>
+                </div>
+                <a href="index.html" class="py-2 text-primary font-bold">首页</a>
+                <a href="launchers.html" class="py-2 hover:text-primary transition-colors duration-300">启动器</a>
+                <a href="modpacks.html" class="py-2 hover:text-primary transition-colors duration-300">整合包</a>
+                <a href="mods.html" class="py-2 hover:text-primary transition-colors duration-300">模组</a>
+                <a href="maps.html" class="py-2 hover:text-primary transition-colors duration-300">地图</a>
+                <a href="introduction.html" class="py-2 hover:text-primary transition-colors duration-300">网站介绍</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 首页横幅 -->
+    <section id="home" class="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
+        <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://p26-doubao-search-sign.byteimg.com/labis/111d77e5561f2fc247b777794e663be8~tplv-be4g95zd3a-image.jpeg?lk3s=feb11e32&x-expires=1784950497&x-signature=%2BXG6a2R%2B%2FoIhM04fQO80%2FG4tcT0%3D');"></div>
+        <div class="absolute inset-0 bg-dark bg-opacity-50"></div>
+        <div class="container mx-auto px-4 z-10 text-center">
+            <h1 class="text-4xl md:text-6xl font-bold text-white mb-6 text-shadow-lg" data-aos="fade-up" data-aos-duration="1000">
+                欢迎来到 <span class="bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">小晨のMC资源站</span>
+            </h1>
+            <p class="text-xl md:text-2xl text-white mb-8 max-w-3xl mx-auto text-shadow" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="200">
+                这里提供各种Minecraft光影包、启动器、整合包、模组和地图下载，希望能帮助到各位玩家！
+            </p>
+            <div class="flex flex-wrap justify-center gap-4" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="400">
+                <button id="scroll-to-resources" class="btn-ripple bg-primary hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
+                    开始探索 <i class="fa fa-chevron-down ml-2"></i>
+                </button>
+                <a href="about.html" class="btn-ripple bg-secondary hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
+                    了解更多
+                </a>
+            </div>
+        </div>
+        
+        <!-- 装饰性立方体 -->
+        <div class="cube-container absolute inset-0 pointer-events-none">
+            <div class="cube" style="top: 10%; left: 10%;"></div>
+            <div class="cube" style="top: 20%; right: 15%; animation-delay: -2s;"></div>
+            <div class="cube" style="bottom: 30%; left: 20%; animation-delay: -4s;"></div>
+            <div class="cube" style="bottom: 15%; right: 25%; animation-delay: -6s;"></div>
+        </div>
+    </section>
+
+    <!-- 资源分类概览 -->
+    <section id="resources" class="py-20 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12" data-aos="fade-up">
+                资源 <span class="text-primary">分类</span>
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- 启动器 -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden card-hover" data-aos="fade-up" data-aos-delay="100">
+                    <div class="p-6 text-center">
+                        <div class="w-20 h-20 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <i class="fa fa-rocket text-3xl text-primary"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-4">启动器</h3>
+                        <p class="text-gray-600 mb-6">
+                            各种功能强大的Minecraft启动器，支持多账户管理和模组加载。
+                        </p>
+                        <a href="launchers.html" class="btn-ripple bg-primary hover:bg-green-600 text-white py-2 px-4 rounded-lg transition-all duration-300 inline-block">
+                            查看启动器
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- 整合包 -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden card-hover" data-aos="fade-up" data-aos-delay="200">
+                    <div class="p-6 text-center">
+                        <div class="w-20 h-20 bg-secondary bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <i class="fa fa-cube text-3xl text-secondary"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-4">整合包</h3>
+                        <p class="text-gray-600 mb-6">
+                            精心配置的整合包，包含各种模组、材质包和优化设置。
+                        </p>
+                        <a href="modpacks.html" class="btn-ripple bg-secondary hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition-all duration-300 inline-block">
+                            查看整合包
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- 模组 -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden card-hover" data-aos="fade-up" data-aos-delay="300">
+                    <div class="p-6 text-center">
+                        <div class="w-20 h-20 bg-accent bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <i class="fa fa-puzzle-piece text-3xl text-accent"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-4">模组</h3>
+                        <p class="text-gray-600 mb-6">
+                            精选的Minecraft模组，为游戏添加新功能和内容。
+                        </p>
+                        <a href="mods.html" class="btn-ripple bg-accent hover:bg-orange-600 text-white py-2 px-4 rounded-lg transition-all duration-300 inline-block">
+                            查看模组
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- 地图 -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden card-hover" data-aos="fade-up" data-aos-delay="400">
+                    <div class="p-6 text-center">
+                        <div class="w-20 h-20 bg-purple-500 bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <i class="fa fa-map text-3xl text-purple-500"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-4">地图</h3>
+                        <p class="text-gray-600 mb-6">
+                            各种精美的Minecraft地图，包括生存、冒险和创意地图。
+                        </p>
+                        <a href="maps.html" class="btn-ripple bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-lg transition-all duration-300 inline-block">
+                            查看地图
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 最新资源 -->
+    <section class="py-20 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12" data-aos="fade-up">
+                最新 <span class="text-primary">资源</span>
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- 最新资源1 -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden card-hover" data-aos="fade-up" data-aos-delay="100">
+                    <img src="https://p3-doubao-search-sign.byteimg.com/labis/image/4e945b173a90a7aff3e23f87c12e8795~tplv-be4g95zd3a-image.jpeg?lk3s=feb11e32&x-expires=1784794498&x-signature=DJpAXzWPxwNriA13kUx6ms4kxfs%3D" alt="RotrBLOCKS原版高清" class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-2">RotrBLOCKS原版高清</h3>
+                        <p class="text-gray-600 mb-4">
+                            一款高质量的原版风格高清材质包，保留原版特色的同时提升了视觉效果。
+                        </p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">1.19.2</span>
+                            <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">整合包</span>
+                        </div>
+                        <a href="modpacks.html" class="btn-ripple bg-primary hover:bg-green-600 text-white py-2 px-4 rounded-lg transition-all duration-300 inline-block w-full text-center">
+                            查看详情
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- 最新资源2 -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden card-hover" data-aos="fade-up" data-aos-delay="200">
+                    <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/80e94eb479cc400aa1158744ad982dab~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=2026012416144667E9BE73895EE7095690&rrcfp=f06b921b&x-expires=1771834517&x-signature=e78FGAF%2Fb1H1Z52YPzpNA7y8L%2Bg%3D" alt="PCL启动器" class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-2">PCL启动器 3.0.0</h3>
+                        <p class="text-gray-600 mb-4">
+                            功能强大的Minecraft启动器，支持多账户管理、模组管理、资源包管理等功能。
+                        </p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">3.0.0</span>
+                            <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">启动器</span>
+                        </div>
+                        <a href="launchers.html" class="btn-ripple bg-primary hover:bg-green-600 text-white py-2 px-4 rounded-lg transition-all duration-300 inline-block w-full text-center">
+                            查看详情
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- 最新资源3 -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden card-hover" data-aos="fade-up" data-aos-delay="300">
+                    <img src="https://p3-doubao-search-sign.byteimg.com/pgc-image/d6a3048a64624b788dfa52443c76bfb4~tplv-be4g95zd3a-image.jpeg?lk3s=feb11e32&x-expires=1784794498&x-signature=VH8VXVFAwjwjtk6l%2BE1FuLZACYE%3D" alt="梦幻岛" class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-2">梦幻岛</h3>
+                        <p class="text-gray-600 mb-4">
+                            一个美丽的生存地图，包含多样化的地形和生物群系，适合长期生存和探索。
+                        </p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">1.19.2</span>
+                            <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">地图</span>
+                        </div>
+                        <a href="maps.html" class="btn-ripple bg-primary hover:bg-green-600 text-white py-2 px-4 rounded-lg transition-all duration-300 inline-block w-full text-center">
+                            查看详情
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p>&copy; 2023 小晨的Minecraft资源站. 保留所有权利.</p>
+                </div>
+                <div class="flex space-x-4">
+                    <a href="index.html" class="hover:text-primary transition-colors duration-300">首页</a>
+                    <a href="launchers.html" class="hover:text-primary transition-colors duration-300">启动器</a>
+                    <a href="modpacks.html" class="hover:text-primary transition-colors duration-300">整合包</a>
+                    <a href="mods.html" class="hover:text-primary transition-colors duration-300">模组</a>
+                    <a href="maps.html" class="hover:text-primary transition-colors duration-300">地图</a>
+                    <a href="introduction.html" class="hover:text-primary transition-colors duration-300">网站介绍</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 下载模态框 -->
+    <div id="download-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4 transform transition-all">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold" id="modal-title">下载确认</h3>
+                <button id="close-modal" class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <p class="mb-6" id="modal-content">
+                你确定要下载此文件吗？
+            </p>
+            <div class="flex justify-end space-x-4">
+                <button id="cancel-download" class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors duration-300">
+                    取消
+                </button>
+                <button id="confirm-download" class="px-4 py-2 bg-primary text-white rounded hover:bg-green-600 transition-colors duration-300">
+                    确认下载
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 通知提示 -->
+    <div id="notification" class="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+        <p id="notification-text">操作成功！</p>
+    </div>
+
+    <!-- 加载动画 -->
+    <div id="page-loader" class="fixed inset-0 bg-dark flex items-center justify-center z-50">
+        <div class="text-center">
+            <div class="loading mx-auto mb-4"></div>
+            <p class="text-white text-lg">正在加载资源...</p>
+        </div>
+    </div>
+
+    <!-- 滚动到顶部按钮 -->
+    <button id="scroll-top-btn" class="fixed bottom-4 right-4 bg-primary hover:bg-green-600 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-40">
+        <i class="fa fa-arrow-up"></i>
+    </button>
+
+    <!-- 自定义脚本 -->
+    <script src="js/script.js"></script>
+</body>
+</html>
