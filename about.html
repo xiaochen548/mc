@@ -15,7 +15,7 @@
     <script src="https://cdn.baomitu.com/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdn.baomitu.com/gsap/3.12.2/ScrollTrigger.min.js"></script>
     
-    <!-- 自定义样式 -->
+    <!-- 自定义样式（路径已确认：css/style.css） -->
     <link rel="stylesheet" href="css/style.css">
     
     <script>
@@ -36,6 +36,22 @@
             }
         }
     </script>
+    
+    <!-- 补充加载动画的关键样式（避免样式缺失导致加载动画异常） -->
+    <style>
+        .loading {
+            width: 48px;
+            height: 48px;
+            border: 5px solid #fff;
+            border-bottom-color: #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body class="bg-light text-dark">
     <!-- 导航栏 -->
@@ -114,7 +130,7 @@
                 <div class="bg-white rounded-xl shadow-lg p-8" data-aos="fade-up">
                     <h2 class="text-3xl font-bold mb-6 text-center">关于本站</h2>
                     <p class="text-gray-600 mb-6 leading-relaxed">
-                        小晨的Minecraft资源站是一个专注于提供Minecraft相关资源的网站，成立于2023年。我们的目标是为Minecraft玩家提供高质量的资源下载，包括启动器、整合包、模组和地图等。
+                        小晨的Minecraft资源站是一个专注于提供Minecraft相关资源的网站，成立于2026年。我们的目标是为Minecraft玩家提供高质量的资源下载，包括启动器、整合包、模组和地图等。（虽然现在还没用）
                     </p>
                     <p class="text-gray-600 mb-6 leading-relaxed">
                         作为一名热爱Minecraft的玩家，我（小晨）希望通过这个网站分享我收集和制作的各种资源，帮助其他玩家更好地享受Minecraft游戏。
@@ -155,7 +171,7 @@
                             </li>
                             <li class="flex items-start">
                                 <i class="fa fa-check-circle text-green-500 mr-2 mt-1"></i>
-                                <span>持续更新：不断更新和优化资源</span>
+                                <span>持续更新：不断更新和优化资源（更新很慢就是了）</span>
                             </li>
                         </ul>
                     </div>
@@ -166,11 +182,11 @@
                     <div class="flex flex-col md:flex-row justify-center items-center space-y-4 md:space-y-0 md:space-x-8">
                         <a href="#" class="flex items-center text-gray-600 hover:text-primary transition-colors duration-300">
                             <i class="fa fa-envelope text-2xl mr-2"></i>
-                            <span>email@example.com</span>
+                            <span>q7655805@outlook.com</span>
                         </a>
                         <a href="#" class="flex items-center text-gray-600 hover:text-primary transition-colors duration-300">
                             <i class="fa fa-weixin text-2xl mr-2"></i>
-                            <span>微信：xiaochenmc</span>
+                            <span>微信：d2187684911</span>
                         </a>
                         <a href="#" class="flex items-center text-gray-600 hover:text-primary transition-colors duration-300">
                             <i class="fa fa-github text-2xl mr-2"></i>
@@ -197,7 +213,7 @@
         <div class="container mx-auto px-4">
             <div class="flex flex-col md:flex-row justify-between items-center">
                 <div class="mb-4 md:mb-0">
-                    <p>&copy; 2023 小晨的Minecraft资源站. 保留所有权利.</p>
+                    <p>&copy; 2026 小晨的Minecraft资源站. 保留所有权利.</p>
                 </div>
                 <div class="flex space-x-4">
                     <a href="index.html" class="hover:text-primary transition-colors duration-300">首页</a>
@@ -229,7 +245,7 @@
         <i class="fa fa-arrow-up"></i>
     </button>
 
-    <!-- 自定义脚本 -->
+    <!-- 自定义脚本（路径已确认：js/script.js） -->
     <script src="js/script.js"></script>
 </body>
 </html>

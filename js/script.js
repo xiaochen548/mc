@@ -1,452 +1,257 @@
-// 全局变量
-let currentDownloadFile = null;
-
-// DOM加载完成后执行
+// 页面加载完成后执行
 document.addEventListener('DOMContentLoaded', function() {
-    // 初始化AOS动画库
-    if (typeof AOS !== 'undefined') {
+    // 测试：控制台输出，验证JS是否执行
+    console.log('核心JS代码已正常执行！');
+    // 存储当前选中的下载链接
+    let currentDownloadUrl = '';
+    
+    // ========== 1. 隐藏加载动画 ==========
+    setTimeout(function() {
+        const loader = document.getElementById('page-loader');
+        if(loader) { // 增加判断，避免元素不存在报错
+            loader.style.opacity = '0';
+            setTimeout(() => {
+                loader.classList.add('hidden');
+            }, 300);
+        }
+    }, 800);
+    
+    // ========== 2. 初始化AOS动画库 ==========
+    if(typeof AOS !== 'undefined') { // 增加判断，避免AOS未加载报错
         AOS.init({
             duration: 800,
-            once: true,
-            offset: 100
+            easing: 'ease-in-out',
+            once: true
         });
     }
-
-    // 初始化GSAP ScrollTrigger
-    if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
-        gsap.registerPlugin(ScrollTrigger);
-        
-        // 页面标题动画
-        gsap.utils.toArray('section h1, section h2').forEach((heading, i) => {
-            gsap.from(heading, {
-                y: 50,
-                opacity: 0,
-                duration: 1,
-                scrollTrigger: {
-                    trigger: heading,
-                    start: 'top 80%',
-                    toggleActions: 'play none none none'
-                }
-            });
-        });
-    }
-
-    // 移动端菜单切换
-    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    
+    // ========== 3. 移动端菜单切换 ==========
+    const mobileMenuBtn = document.getElementById('mobile-menu-button');
     const mobileMenu = document.getElementById('mobile-menu');
-    
-    if (mobileMenuButton && mobileMenu) {
-        mobileMenuButton.addEventListener('click', function() {
+    if(mobileMenuBtn && mobileMenu) { // 增加判断
+        mobileMenuBtn.addEventListener('click', function() {
             mobileMenu.classList.toggle('hidden');
-            if (!mobileMenu.classList.contains('hidden')) {
-                mobileMenu.classList.add('fade-in');
-            }
         });
     }
 
-    // 主题切换
-    const themeToggle = document.getElementById('theme-toggle');
-    const themeToggleMobile = document.getElementById('theme-toggle-mobile');
-    const body = document.body;
-    
-    // 检查本地存储中的主题设置
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-        body.classList.add('dark-mode');
-        updateThemeIcons('dark');
-    }
-    
-    function updateThemeIcons(theme) {
-        const icons = document.querySelectorAll('#theme-toggle i, #theme-toggle-mobile i');
-        icons.forEach(icon => {
-            if (theme === 'dark') {
-                icon.classList.remove('fa-moon-o');
-                icon.classList.add('fa-sun-o');
-            } else {
-                icon.classList.remove('fa-sun-o');
-                icon.classList.add('fa-moon-o');
-            }
-        });
-    }
-    
-    function toggleTheme() {
-        body.classList.toggle('dark-mode');
-        const isDark = body.classList.contains('dark-mode');
-        localStorage.setItem('theme', isDark ? 'dark' : 'light');
-        updateThemeIcons(isDark ? 'dark' : 'light');
-    }
-    
-    if (themeToggle) {
-        themeToggle.addEventListener('click', toggleTheme);
-    }
-    
-    if (themeToggleMobile) {
-        themeToggleMobile.addEventListener('click', toggleTheme);
-    }
-
-    // 搜索功能
-    const searchInput = document.getElementById('search-input');
-    const searchButton = document.getElementById('search-button');
-    
-    function performSearch() {
-        const query = searchInput.value.toLowerCase().trim();
-        if (query === '') return;
-        
-        // 获取所有资源卡片
-        const resourceCards = document.querySelectorAll('.resource-card');
-        let found = false;
-        
-        resourceCards.forEach(card => {
-            const title = card.querySelector('h3')?.textContent.toLowerCase() || '';
-            const description = card.querySelector('p')?.textContent.toLowerCase() || '';
-            
-            if (title.includes(query) || description.includes(query)) {
-                card.style.display = 'block';
-                found = true;
-            } else {
-                card.style.display = 'none';
-            }
-        });
-        
-        // 显示搜索结果通知
-        showNotification(found ? `找到 ${document.querySelectorAll('.resource-card[style*="display: block"]').length} 个结果` : '未找到相关资源');
-    }
-    
-    if (searchButton) {
-        searchButton.addEventListener('click', performSearch);
-    }
-    
-    if (searchInput) {
-        searchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                performSearch();
-            }
-        });
-        
-        // 搜索框焦点效果
-        searchInput.addEventListener('focus', function() {
-            this.parentElement.classList.add('ring-2', 'ring-primary');
-        });
-        
-        searchInput.addEventListener('blur', function() {
-            this.parentElement.classList.remove('ring-2', 'ring-primary');
-        });
-    }
-
-    // 资源过滤功能
-    const filterButtons = document.querySelectorAll('.filter-btn');
-    
-    filterButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            // 移除所有按钮的active状态
-            filterButtons.forEach(btn => {
-                btn.classList.remove('active', 'bg-primary', 'text-white');
-                btn.classList.add('bg-gray-200', 'hover:bg-primary', 'hover:text-white');
-            });
-            
-            // 添加当前按钮的active状态
-            this.classList.add('active', 'bg-primary', 'text-white');
-            this.classList.remove('bg-gray-200', 'hover:bg-primary', 'hover:text-white');
-            
-            const filter = this.getAttribute('data-filter');
-            const resourceCards = document.querySelectorAll('.resource-card');
-            
-            resourceCards.forEach(card => {
-                if (filter === 'all' || card.getAttribute('data-category') === filter) {
-                    card.style.display = 'block';
-                    setTimeout(() => {
-                        card.style.opacity = '1';
-                        card.style.transform = 'scale(1)';
-                    }, 10);
-                } else {
-                    card.style.opacity = '0';
-                    card.style.transform = 'scale(0.8)';
-                    setTimeout(() => {
-                        card.style.display = 'none';
-                    }, 300);
-                }
-            });
-        });
-    });
-
-    // 下载功能
-    const downloadButtons = document.querySelectorAll('.download-btn');
-    const downloadModal = document.getElementById('download-modal');
-    const closeModal = document.getElementById('close-modal');
-    const cancelDownload = document.getElementById('cancel-download');
-    const confirmDownload = document.getElementById('confirm-download');
-    const modalTitle = document.getElementById('modal-title');
-    const modalContent = document.getElementById('modal-content');
-    
-    function openDownloadModal(file, size, version) {
-        currentDownloadFile = file;
-        modalTitle.textContent = `下载 ${file}`;
-        modalContent.textContent = `你确定要下载 ${file} 吗？\n版本: ${version}\n大小: ${size}`;
-        downloadModal.classList.remove('hidden');
-        downloadModal.classList.add('scale-in');
-    }
-    
-    function closeDownloadModal() {
-        downloadModal.classList.add('hidden');
-        downloadModal.classList.remove('scale-in');
-        currentDownloadFile = null;
-    }
-    
-    downloadButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const file = this.getAttribute('data-file');
-            const size = this.getAttribute('data-size');
-            const version = this.getAttribute('data-version');
-            openDownloadModal(file, size, version);
-        });
-    });
-    
-    if (closeModal) {
-        closeModal.addEventListener('click', closeDownloadModal);
-    }
-    
-    if (cancelDownload) {
-        cancelDownload.addEventListener('click', closeDownloadModal);
-    }
-    
-    if (confirmDownload) {
-        confirmDownload.addEventListener('click', function() {
-            // 模拟下载
-            showNotification(`开始下载 ${currentDownloadFile}...`);
-            
-            // 模拟下载进度
-            setTimeout(() => {
-                showNotification(`${currentDownloadFile} 下载完成！`);
-            }, 2000);
-            
-            closeDownloadModal();
-        });
-    }
-
-    // 点击模态框外部关闭
-    if (downloadModal) {
-        downloadModal.addEventListener('click', function(e) {
-            if (e.target === downloadModal) {
-                closeDownloadModal();
-            }
-        });
-    }
-
-    // 通知提示功能
-    const notification = document.getElementById('notification');
-    const notificationText = document.getElementById('notification-text');
-    
-    function showNotification(message, type = 'success') {
-        if (!notification || !notificationText) return;
-        
-        notificationText.textContent = message;
-        
-        // 设置通知类型样式
-        notification.className = 'fixed bottom-4 right-4 px-4 py-2 rounded-lg shadow-lg transform transition-all duration-300 z-50';
-        
-        if (type === 'success') {
-            notification.classList.add('bg-green-500', 'text-white');
-        } else if (type === 'error') {
-            notification.classList.add('bg-red-500', 'text-white');
-        } else if (type === 'warning') {
-            notification.classList.add('bg-yellow-500', 'text-white');
-        } else if (type === 'info') {
-            notification.classList.add('bg-blue-500', 'text-white');
-        }
-        
-        // 显示通知
-        notification.classList.remove('translate-y-20', 'opacity-0');
-        notification.classList.add('translate-y-0', 'opacity-100');
-        
-        // 3秒后隐藏
-        setTimeout(() => {
-            notification.classList.add('translate-y-20', 'opacity-0');
-            notification.classList.remove('translate-y-0', 'opacity-100');
-        }, 3000);
-    }
-
-    // 滚动到顶部按钮
-    const scrollTopBtn = document.getElementById('scroll-top-btn');
-    
-    function toggleScrollTopBtn() {
-        if (!scrollTopBtn) return;
-        
-        if (window.scrollY > 300) {
-            scrollTopBtn.classList.remove('translate-y-20', 'opacity-0');
-            scrollTopBtn.classList.add('translate-y-0', 'opacity-100');
-        } else {
-            scrollTopBtn.classList.add('translate-y-20', 'opacity-0');
-            scrollTopBtn.classList.remove('translate-y-0', 'opacity-100');
-        }
-    }
-    
-    if (scrollTopBtn) {
-        scrollTopBtn.addEventListener('click', function() {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        });
-    }
-    
-    window.addEventListener('scroll', toggleScrollTopBtn);
-
-    // 页面加载完成后隐藏加载动画
-    const pageLoader = document.getElementById('page-loader');
-    
-    window.addEventListener('load', function() {
-        if (pageLoader) {
-            setTimeout(() => {
-                pageLoader.classList.add('opacity-0');
-                setTimeout(() => {
-                    pageLoader.classList.add('hidden');
-                }, 500);
-            }, 500);
-        }
-    });
-
-    // 平滑滚动
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            const targetId = this.getAttribute('href');
-            if (targetId === '#') return;
-            
-            const targetElement = document.querySelector(targetId);
-            if (targetElement) {
-                targetElement.scrollIntoView({
-                    behavior: 'smooth'
-                });
-            }
-        });
-    });
-
-    // 卡片悬停效果增强
-    const cards = document.querySelectorAll('.card-hover');
-    
-    cards.forEach(card => {
-        card.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-5px) scale(1.02)';
-        });
-        
-        card.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0) scale(1)';
-        });
-    });
-
-    // 按钮点击效果
-    const buttons = document.querySelectorAll('button:not(.filter-btn)');
-    
-    buttons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            // 创建涟漪效果
+    // ========== 4. 按钮波纹效果 ==========
+    const rippleBtns = document.querySelectorAll('.btn-ripple');
+    rippleBtns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            const x = e.clientX - e.target.getBoundingClientRect().left;
+            const y = e.clientY - e.target.getBoundingClientRect().top;
             const ripple = document.createElement('span');
-            const rect = this.getBoundingClientRect();
-            const size = Math.max(rect.width, rect.height);
-            const x = e.clientX - rect.left - size / 2;
-            const y = e.clientY - rect.top - size / 2;
-            
-            ripple.style.width = ripple.style.height = size + 'px';
-            ripple.style.left = x + 'px';
-            ripple.style.top = y + 'px';
-            ripple.classList.add('absolute', 'bg-white', 'bg-opacity-30', 'rounded-full', 'transform', 'scale-0', 'animate-ripple', 'pointer-events-none');
-            
+            ripple.style.width = ripple.style.height = Math.max(e.target.offsetWidth, e.target.offsetHeight) + 'px';
+            ripple.style.left = x - (parseInt(ripple.style.width) / 2) + 'px';
+            ripple.style.top = y - (parseInt(ripple.style.height) / 2) + 'px';
+            ripple.classList.add('absolute', 'rounded-full', 'bg-white', 'bg-opacity-30', 'pointer-events-none', 'animate-["ripple_0.6s_ease-out"]');
             this.appendChild(ripple);
-            
             setTimeout(() => {
                 ripple.remove();
             }, 600);
         });
     });
+    
+    // ========== 5. 下载按钮核心逻辑 ==========
+    const downloadBtns = document.querySelectorAll('.download-btn');
+    console.log('找到下载按钮数量：', downloadBtns.length); 
+    const downloadModal = document.getElementById('download-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalContent = document.getElementById('modal-content');
+    const closeModalBtn = document.getElementById('close-modal');
+    const cancelDownloadBtn = document.getElementById('cancel-download');
+    const confirmDownloadBtn = document.getElementById('confirm-download');
 
-    // 添加CSS动画关键帧
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes ripple {
-            to {
-                transform: scale(4);
-                opacity: 0;
-            }
-        }
-        .animate-ripple {
-            animation: ripple 0.6s linear;
-        }
-    `;
-    document.head.appendChild(style);
+    // 增加判断，确保元素都存在再绑定事件
+    if(downloadBtns.length && downloadModal && modalTitle && modalContent && closeModalBtn && cancelDownloadBtn && confirmDownloadBtn) {
+        downloadBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                console.log('点击了立即下载按钮！'); 
+                const fileName = this.getAttribute('data-file');
+                const fileSize = this.getAttribute('data-size');
+                const fileVersion = this.getAttribute('data-version');
+                currentDownloadUrl = this.getAttribute('data-download-url');
+                
+                // 填充模态框内容
+                modalTitle.textContent = `下载 ${fileName}`;
+                modalContent.textContent = `你确定要下载 ${fileName} (版本: ${fileVersion}, 大小: ${fileSize}) 吗？`;
+                
+                // 显示模态框
+                downloadModal.classList.remove('hidden');
+                downloadModal.style.opacity = '1';
+                document.body.style.overflow = 'hidden'; 
+            });
+        });
 
-    // 滚动到资源分类功能
-    const scrollToResourcesBtn = document.getElementById('scroll-to-resources');
-    if (scrollToResourcesBtn) {
-        scrollToResourcesBtn.addEventListener('click', function() {
-            const resourcesSection = document.getElementById('resources');
-            if (resourcesSection) {
-                resourcesSection.scrollIntoView({
-                    behavior: 'smooth'
-                });
+        // 关闭模态框通用方法
+        function closeModal() {
+            downloadModal.style.opacity = '0';
+            setTimeout(() => {
+                downloadModal.classList.add('hidden');
+                document.body.style.overflow = 'auto'; 
+                currentDownloadUrl = ''; 
+            }, 300);
+        }
+
+        // 绑定模态框关闭事件
+        closeModalBtn.addEventListener('click', closeModal);
+        cancelDownloadBtn.addEventListener('click', closeModal);
+        downloadModal.addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        // 确认下载核心逻辑
+        confirmDownloadBtn.addEventListener('click', function() {
+            if (!currentDownloadUrl || currentDownloadUrl.trim() === '') {
+                showNotification('下载链接未配置，暂无法下载！');
+                closeModal();
+                return;
             }
+            if (currentDownloadUrl === '待补充') {
+                showNotification('该启动器下载链接暂未更新，敬请期待！');
+                closeModal();
+                return;
+            }
+
+            let finalDownloadUrl = currentDownloadUrl;
+            if (finalDownloadUrl.includes('github.com') && finalDownloadUrl.includes('/blob/')) {
+                finalDownloadUrl = finalDownloadUrl.replace('/blob/', '/raw/');
+            }
+
+            try {
+                const downloadWindow = window.open(finalDownloadUrl, '_blank');
+                if (!downloadWindow) {
+                    showNotification('下载被浏览器拦截！请允许网站弹窗后重试');
+                } else {
+                    showNotification('下载已开始！请在新窗口确认下载');
+                }
+            } catch (err) {
+                showNotification('下载触发失败：' + err.message);
+            }
+
+            closeModal();
         });
     }
-
-    // 初始化页面
-    toggleScrollTopBtn();
-});
-
-// 防止右键菜单（可选）
-// document.addEventListener('contextmenu', function(e) {
-//     e.preventDefault();
-//     return false;
-// });
-
-// 防止拖拽（可选）
-// document.addEventListener('dragstart', function(e) {
-//     if (e.target.tagName === 'IMG') {
-//         e.preventDefault();
-//     }
-// });
-
-// 防止选择文本（可选）
-// document.addEventListener('selectstart', function(e) {
-//     e.preventDefault();
-//     return false;
-// });
-
-// 键盘快捷键
-document.addEventListener('keydown', function(e) {
-    // Ctrl/Cmd + K 聚焦搜索框
-    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-        e.preventDefault();
-        const searchInput = document.getElementById('search-input');
-        if (searchInput) {
-            searchInput.focus();
+    
+    // ========== 6. 通知提示功能 ==========
+    function showNotification(text) {
+        const notification = document.getElementById('notification');
+        const notificationText = document.getElementById('notification-text');
+        if(notification && notificationText) { // 增加判断
+            notificationText.textContent = text;
+            notification.style.transform = 'translate-y(0)';
+            notification.style.opacity = '1';
+            setTimeout(() => {
+                notification.style.transform = 'translate-y(20px)';
+                notification.style.opacity = '0';
+            }, 3000);
         }
     }
     
-    // ESC 关闭模态框
-    if (e.key === 'Escape') {
-        const modals = document.querySelectorAll('.fixed.inset-0:not(#page-loader)');
-        modals.forEach(modal => {
-            if (!modal.classList.contains('hidden')) {
-                modal.classList.add('hidden');
+    // ========== 7. 滚动到顶部功能 ==========
+    const scrollTopBtn = document.getElementById('scroll-top-btn');
+    if(scrollTopBtn) { // 增加判断
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 300) {
+                scrollTopBtn.style.transform = 'translate-y(0)';
+                scrollTopBtn.style.opacity = '1';
+            } else {
+                scrollTopBtn.style.transform = 'translate-y(20px)';
+                scrollTopBtn.style.opacity = '0';
             }
         });
-    }
-    
-    // Ctrl/Cmd + D 切换主题
-    if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
-        e.preventDefault();
-        const themeToggle = document.getElementById('theme-toggle');
-        if (themeToggle) {
-            themeToggle.click();
-        }
-    }
-    
-    // Ctrl/Cmd + ↑ 滚动到顶部
-    if ((e.ctrlKey || e.metaKey) && e.key === 'ArrowUp') {
-        e.preventDefault();
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
+        scrollTopBtn.addEventListener('click', function() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     }
+    
+    // ========== 8. 主题切换功能 ==========
+    const themeToggle = document.getElementById('theme-toggle');
+    const themeToggleMobile = document.getElementById('theme-toggle-mobile');
+    if(themeToggle && themeToggleMobile) { // 增加判断
+        let isDarkMode = false;
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            const body = document.body;
+            if (isDarkMode) {
+                body.classList.remove('bg-light', 'text-dark');
+                body.classList.add('bg-dark', 'text-light');
+                themeToggle.innerHTML = '<i class="fa fa-sun-o"></i>';
+                themeToggleMobile.innerHTML = '<i class="fa fa-sun-o"></i>';
+            } else {
+                body.classList.remove('bg-dark', 'text-light');
+                body.classList.add('bg-light', 'text-dark');
+                themeToggle.innerHTML = '<i class="fa fa-moon-o"></i>';
+                themeToggleMobile.innerHTML = '<i class="fa fa-moon-o"></i>';
+            }
+        }
+        themeToggle.addEventListener('click', toggleTheme);
+        themeToggleMobile.addEventListener('click', toggleTheme);
+    }
+    
+    // ========== 9. 搜索功能 ==========
+    const searchBtn = document.getElementById('search-button');
+    const searchInput = document.getElementById('search-input');
+    if(searchBtn && searchInput) { // 增加判断
+        searchBtn.addEventListener('click', function() {
+            const searchText = searchInput.value.trim();
+            searchText ? showNotification(`正在搜索: ${searchText}`) : showNotification('请输入搜索内容');
+        });
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') searchBtn.click();
+        });
+    }
+
+    // ========== 10. MC点击特效（核心修复：解决白屏+更多图标+低重复） ==========
+    // 扩充后的MC主题图标库
+    const mcPixelItems = [
+        '⚔️', '⛏️', '🪓', '🗡️', '💰', '💎', '🪨', '🌾', '🍞', '🏹',
+        '🧱', '🔥', '💧', '✨', '🍖', '🥩', '🥚', '🍎', '🍄', '🌱',
+        '⛰️', '🧪', '🔮', '⚗️', '🏺'
+    ];
+
+    // 全页面点击触发（简化去重逻辑，避免出错）
+    document.addEventListener('click', function(e) {
+        try { // 增加try-catch，防止特效代码出错影响整个页面
+            const itemCount = Math.floor(Math.random() * 4) + 6; // 6-9个
+            const usedItems = []; // 记录已使用的图标
+            
+            for (let i = 0; i < itemCount; i++) {
+                // 先选未使用的图标，用完再随机选
+                let randomItem;
+                if(usedItems.length < mcPixelItems.length) {
+                    do {
+                        randomItem = mcPixelItems[Math.floor(Math.random() * mcPixelItems.length)];
+                    } while(usedItems.includes(randomItem));
+                    usedItems.push(randomItem);
+                } else {
+                    randomItem = mcPixelItems[Math.floor(Math.random() * mcPixelItems.length)];
+                }
+                
+                // 创建特效元素
+                const effect = document.createElement('span');
+                effect.className = 'mc-click-effect';
+                effect.textContent = randomItem;
+                effect.style.left = e.clientX + 'px';
+                effect.style.top = e.clientY + 'px';
+                
+                // 随机颜色
+                const mcColors = ['#4A6FE3', '#4CAF50', '#FFD700', '#8C8C8C', '#E53935', '#9C27B0', '#FF9800', '#00BCD4'];
+                effect.style.color = mcColors[Math.floor(Math.random() * mcColors.length)];
+                
+                // 随机偏移
+                const randomX = (Math.random() - 0.5) * 220;
+                const randomY = (Math.random() - 0.5) * 220;
+                effect.style.setProperty('--random-x', randomX + 'px');
+                effect.style.setProperty('--random-y', randomY + 'px');
+                
+                document.body.appendChild(effect);
+                setTimeout(() => {
+                    effect.remove();
+                }, 1000);
+            }
+        } catch(err) {
+            console.log('特效生成出错:', err); // 出错只打印日志，不影响页面
+        }
+    });
 });
