@@ -1,0 +1,4441 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>勇者斗恶龙：冒险</title>
+    <!-- 引入外部资源 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+    
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'win7-blue': '#0078D7',
+                        'win7-gray': '#C5C5C5',
+                        'win7-dark-gray': '#7A7A7A',
+                        'win7-light-gray': '#F0F0F0',
+                        'win7-border': '#828282'
+                    },
+                    fontFamily: {
+                        'win7': ['Segoe UI', 'Arial', 'sans-serif'],
+                        'pixel': ['Courier New', 'monospace']
+                    },
+                    animation: {
+                        // 按钮点击动画
+                        'btn-click': 'btnClick 0.2s ease-in-out',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- 自定义样式 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .win7-window {
+                background: linear-gradient(to bottom, #C5C5C5 0%, #F0F0F0 100%);
+                border: 2px solid #828282;
+                box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            }
+            
+            .win7-titlebar {
+                background: linear-gradient(to right, #0078D7 0%, #005A9E 100%);
+                border-bottom: 2px solid #828282;
+                color: white;
+                font-weight: bold;
+            }
+            
+            .agree-btn {
+                background: linear-gradient(to bottom, #34D399 0%, #10B981 100%) !important;
+                color: white !important;
+                border-color: #059669 !important;
+                padding: 10px 30px !important;
+                transition: all 0.1s ease !important;
+            }
+            
+            .agree-btn:hover {
+                background: linear-gradient(to bottom, #10B981 0%, #059669 100%) !important;
+                transform: translateY(-1px) !important;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1) !important;
+            }
+            
+            .agree-btn:active, .agree-btn.clicking {
+                background: linear-gradient(to bottom, #059669 0%, #047857 100%) !important;
+                transform: translateY(1px) !important;
+                box-shadow: none !important;
+                animation: btnClick 0.2s ease-in-out !important;
+            }
+            
+            .disagree-btn {
+                background: linear-gradient(to bottom, #F87171 0%, #EF4444 100%) !important;
+                color: white !important;
+                border-color: #DC2626 !important;
+                padding: 10px 30px !important;
+                transition: all 0.1s ease !important;
+            }
+            
+            .disagree-btn:hover {
+                background: linear-gradient(to bottom, #EF4444 0%, #DC2626 100%) !important;
+                transform: translateY(-1px) !important;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1) !important;
+            }
+            
+            .disagree-btn:active, .disagree-btn.clicking {
+                background: linear-gradient(to bottom, #DC2626 0%, #B91C1C 100%) !important;
+                transform: translateY(1px) !important;
+                box-shadow: none !important;
+                animation: btnClick 0.2s ease-in-out !important;
+            }
+            
+            /* 条款目录样式 */
+            .terms-directory {
+                width: 220px;
+                padding: 15px;
+                border-right: 1px solid #828282;
+                height: 550px;
+                overflow-y: auto;
+                background-color: #E8E8E8;
+            }
+            
+            .directory-item {
+                padding: 8px 5px;
+                margin-bottom: 5px;
+                border-radius: 2px;
+                color: #333;
+                cursor: default; /* 不可点击 */
+                font-size: 14px;
+                transition: background-color 0.2s ease;
+            }
+            
+            .directory-item.active {
+                background-color: #0078D7;
+                color: white;
+            }
+            
+            /* 条款内容区域 */
+            .terms-content-wrapper {
+                flex: 1;
+                height: 550px;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .terms-content {
+                flex: 1;
+                padding: 20px;
+                overflow-y: auto;
+                transition: opacity 0.3s ease;
+                line-height: 2.2; /* 进一步增加行高，拉长篇幅 */
+                font-size: 15px; /* 稍微增大字体 */
+            }
+            
+            /* 响应式设计 */
+            @media (max-width: 768px) {
+                .terms-directory {
+                    width: 180px;
+                    padding: 10px;
+                }
+                
+                .terms-content {
+                    padding: 15px;
+                    font-size: 14px;
+                    line-height: 2.0;
+                }
+                
+                .terms-content-wrapper {
+                    height: 450px;
+                }
+                
+                .terms-directory {
+                    height: 450px;
+                }
+            }
+            
+            @media (max-width: 480px) {
+                .terms-window {
+                    flex-direction: column;
+                }
+                
+                .terms-directory {
+                    width: 100%;
+                    height: 150px;
+                    border-right: none;
+                    border-bottom: 1px solid #828282;
+                }
+                
+                .terms-content-wrapper {
+                    height: 400px;
+                }
+                
+                .terms-content {
+                    padding: 12px;
+                    font-size: 13px;
+                }
+            }
+            
+            /* 第二个条款特殊样式 - 缩小内容区 */
+            .terms-content.small-height {
+                height: 300px !important; /* 缩小内容区高度 */
+                flex: none !important;
+            }
+            
+            /* 内容区内的按钮容器 */
+            .inline-buttons-container {
+                width: 100%;
+                display: flex;
+                justify-content: center;
+                padding: 20px 0;
+                border-top: 1px solid #828282;
+                margin-top: 20px;
+                display: none; /* 默认隐藏 */
+            }
+            
+            /* 按钮容器 - 居中偏下 */
+            .terms-buttons-container {
+                width: 100%;
+                display: flex;
+                justify-content: center;
+                padding: 20px 0;
+                border-top: 1px solid #828282;
+            }
+            
+            /* 隐藏底部按钮 */
+            .hide-buttons {
+                display: none !important;
+            }
+            
+            .btn {
+                border-radius: 3px;
+                font-weight: bold;
+                cursor: pointer;
+                border: 1px solid transparent;
+                margin: 0 10px;
+                font-size: 16px;
+            }
+
+            /* 标题栏按钮样式 */
+            .titlebar-btn {
+                cursor: pointer;
+                padding: 2px 5px;
+                border-radius: 2px;
+                transition: background-color 0.2s ease;
+            }
+            
+            .titlebar-btn:hover {
+                background-color: rgba(255,255,255,0.2);
+            }
+            
+            .titlebar-btn:active {
+                background-color: rgba(255,255,255,0.4);
+            }
+
+            /* 条款引导提示弹窗 */
+            .terms-guide-modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: transparent;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+                pointer-events: none;
+            }
+            
+            .terms-guide-modal.active {
+                pointer-events: auto;
+            }
+            
+            .guide-modal-content {
+                background: linear-gradient(to bottom, #C5C5C5 0%, #F0F0F0 100%);
+                border: 2px solid #828282;
+                border-radius: 4px;
+                padding: 0;
+                width: 400px;
+                height: 200px;
+                box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+                position: relative;
+                transition: all 0.3s ease;
+                transform: translateY(0);
+                pointer-events: auto;
+            }
+            
+            /* 窗口标题栏 - Win7风格 */
+            .modal-titlebar {
+                background: linear-gradient(to right, #0078D7 0%, #005A9E 100%);
+                border-bottom: 2px solid #828282;
+                color: white;
+                font-weight: bold;
+                padding: 8px 12px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                cursor: default;
+                position: relative;
+                z-index: 10;
+            }
+            
+            .modal-title {
+                font-size: 14px;
+            }
+            
+            .modal-buttons {
+                display: flex;
+                gap: 4px;
+            }
+            
+            .modal-btn {
+                width: 20px;
+                height: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border: 1px solid #828282;
+                border-radius: 2px;
+                background: linear-gradient(to bottom, #F0F0F0 0%, #C5C5C5 100%);
+                color: #333;
+                font-size: 12px;
+                cursor: pointer;
+                transition: all 0.2s ease;
+            }
+            
+            .modal-btn:hover {
+                background: linear-gradient(to bottom, #E0E0E0 0%, #B5B5B5 100%);
+            }
+            
+            /* 窗口内容区 */
+            .modal-body {
+                padding: 20px;
+                text-align: center;
+                height: calc(100% - 40px - 40px);
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+            
+            .modal-content {
+                margin-bottom: 10px;
+            }
+            
+            /* 窗口底部按钮区 */
+            .modal-footer {
+                padding: 0 20px 20px;
+                display: flex;
+                justify-content: center;
+                gap: 10px;
+            }
+            
+            .guide-modal-btn {
+                background: linear-gradient(to bottom, #34D399 0%, #10B981 100%);
+                color: white;
+                border: none;
+                padding: 10px 30px;
+                font-size: 16px;
+                border-radius: 3px;
+                cursor: pointer;
+                margin-top: 20px;
+                font-weight: bold;
+            }
+            
+            .guide-modal-btn:hover {
+                background: linear-gradient(to bottom, #10B981 0%, #059669 100%);
+            }
+
+            /* 不同意提示弹窗 */
+            .disagree-modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0,0,0,0.9);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+            }
+            
+            .disagree-modal-content {
+                background-color: #F87171;
+                border: 2px solid #B91C1C;
+                border-radius: 4px;
+                padding: 40px;
+                max-width: 500px;
+                text-align: center;
+                box-shadow: 0 0 30px rgba(255,0,0,0.5);
+                color: white;
+            }
+            
+            .disagree-modal-text {
+                font-size: 24px;
+                font-weight: bold;
+                margin-bottom: 20px;
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            }
+            
+            .disagree-modal-btn {
+                background: linear-gradient(to bottom, #C5C5C5 0%, #F0F0F0 100%);
+                color: #333;
+                border: 1px solid #828282;
+                padding: 10px 30px;
+                font-size: 16px;
+                border-radius: 3px;
+                cursor: pointer;
+                margin-top: 20px;
+                font-weight: bold;
+            }
+            
+            .disagree-modal-btn:hover {
+                background: linear-gradient(to bottom, #F0F0F0 100%, #C5C5C5 0%);
+            }
+
+            /* 隐藏元素 */
+            .hidden {
+                display: none !important;
+            }
+            
+            /* 隐藏音频控件 */
+            .audio-player {
+                display: none;
+            }
+        }
+
+        /* 按钮点击动画 */
+        @keyframes btnClick {
+            0% { transform: scale(1) translateY(1px); }
+            50% { transform: scale(0.95) translateY(1px); }
+            100% { transform: scale(1) translateY(1px); }
+        }
+
+        /* 基础布局 */
+        body {
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            background-color: #0a0a0a;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        
+        /* 草原背景样式 */
+        .home-bg {
+            background-image: url('https://aka.doubaocdn.com/s/4eoq1w0dEn?alice_filename=IMG_20260210_182425.jpg');
+            background-repeat: no-repeat;
+            background-position: top center;
+            background-size: cover;
+            position: relative;
+            overflow: hidden;
+            min-height: 100vh;
+        }
+        
+        /* 条款窗口样式 */
+        .terms-window {
+            max-width: 1000px;
+            margin: 50px auto;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        /* 主界面样式 */
+        .main-menu {
+            max-width: 600px;
+            margin: 100px auto;
+            text-align: center;
+            color: white;
+            padding: 30px;
+            background: rgba(0,0,0,0.7);
+            border-radius: 8px;
+        }
+
+        .start-btn {
+            background: linear-gradient(to bottom, #34D399 0%, #10B981 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.2s ease;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.2);
+        }
+
+        .start-btn:active {
+            transform: translateY(1px);
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- 背景音乐 -->
+    <audio class="audio-player" autoplay loop>
+        <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1f976c1281.mp3?filename=undead-funeral-march-113202.mp3" type="audio/mpeg">
+        您的浏览器不支持音频播放
+    </audio>
+
+    <!-- 主界面 -->
+    <div id="mainMenu" class="home-bg">
+        <div class="main-menu">
+            <h1 class="text-4xl mb-6" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.8);">勇者斗恶龙：冒险</h1>
+            <p class="mb-8 text-xl">踏上一场充满挑战的冒险之旅！</p>
+            <button class="start-btn" onclick="startGame()">开始冒险</button>
+        </div>
+    </div>
+
+    <!-- 条款引导提示弹窗 -->
+    <div id="termsGuideModal" class="terms-guide-modal hidden">
+        <div class="guide-modal-content">
+            <h2 class="text-2xl mb-4 text-win7-blue font-bold">📜 冒险须知</h2>
+            <p class="mb-4 text-lg">欢迎加入勇者斗恶龙的冒险！</p>
+            <p class="mb-6 text-gray-700">在开始真正的冒险之前，您需要阅读并同意城堡制定的专属用户条款。<br><strong class="text-red-600">只要您同意所有条款，就能立即开启屠龙冒险！</strong></p>
+            <button class="guide-modal-btn" onclick="closeGuideModal()">我知道了，开始阅读条款</button>
+        </div>
+    </div>
+
+    <!-- 不同意提示弹窗 -->
+    <div id="disagreeModal" class="disagree-modal hidden">
+        <div class="disagree-modal-content">
+            <i class="fa fa-dragon text-5xl mb-4"></i>
+            <div class="disagree-modal-text">什么，这么好的条款你竟然不同意，那别玩了！</div>
+            <p class="mb-4">城堡方对您的决定表示非常失望，您已被永久禁止参与本次冒险。</p>
+            <button class="disagree-modal-btn" onclick="closeDisagreeModal()">确认</button>
+        </div>
+    </div>
+
+    <!-- 条款界面 (默认隐藏) -->
+    <div id="termsScreen" class="hidden">
+        <div class="terms-window win7-window">
+            <!-- 窗口标题栏 -->
+            <div class="win7-titlebar p-3 flex justify-between items-center">
+                <span>勇者斗恶龙专属用户使用条款</span>
+                <div>
+                    <i class="fa fa-minus mr-2 titlebar-btn"></i>
+                    <i class="fa fa-times titlebar-btn" onclick="handleDisagree()"></i>
+                </div>
+            </div>
+
+            <!-- 条款主体区域 - 左侧目录 + 右侧内容 -->
+            <div class="flex">
+                <!-- 左侧条款目录 -->
+                <div class="terms-directory" id="termsDirectory">
+                    <h3 class="font-bold mb-4 text-lg text-center border-b pb-2">条款目录</h3>
+                    <!-- 条款目录项会通过JS动态生成 -->
+                </div>
+
+                <!-- 右侧条款内容 + 按钮 -->
+                <div class="terms-content-wrapper">
+                    <!-- 条款内容 -->
+                    <div class="terms-content" id="termsContent">
+                        <!-- 条款内容会通过JS动态加载 -->
+                        <!-- 内嵌按钮容器 -->
+                        <div class="inline-buttons-container" id="inlineButtons">
+                            <button class="btn disagree-btn" onclick="handleButtonClick(this, handleDisagree)">不同意</button>
+                            <button class="btn agree-btn" onclick="handleButtonClick(this, handleAgree)">同意</button>
+                        </div>
+                    </div>
+
+                    <!-- 按钮区域 - 居中偏下 -->
+                    <div class="terms-buttons-container" id="bottomButtons">
+                        <button class="btn disagree-btn" onclick="handleButtonClick(this, handleDisagree)">不同意</button>
+                        <button class="btn agree-btn" onclick="handleButtonClick(this, handleAgree)">同意</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== 核心框架：勇者斗恶龙主题的超长荒诞条款数据 ==========
+        // 1. 超长篇幅的勇者斗恶龙主题荒诞条款库（超过10条，每次随机选10条）
+        const termsLibrary = [
+            {
+                title: "1. 恶龙尸体处理专属条款",
+                content: `您在此明确同意，在成功击败恶龙后，需独自承担恶龙尸体的全部处理责任，包括但不限于：使用纯手工工具将恶龙尸体完整搬出城堡，搬运路径需严格遵循"城堡-东门-石桥-西山沼泽"的指定路线，不得偏离厘米级精度要求；
+                需在击败恶龙后的72分7秒内完成尸体掩埋，掩埋深度需精确至0.001米（具体数值以现场随机生成的测量工具为准）；掩埋后需在尸体上方种植777棵指定品种的荆棘，且需保证每棵荆棘的生长方向与城堡尖顶呈17.5度夹角；
+                如因恶龙尸体过重、体型过大导致搬运困难，您承诺不会向城堡方寻求任何协助，且需自行承担因尸体搬运导致的肌肉拉伤、骨骼损伤、精神崩溃等所有后果；
+                恶龙尸体处理过程中产生的任何异味、虫害、魔法污染均由您自行解决，城堡方不提供任何清洁工具、除虫药剂或魔法防护装备；
+                如未按要求处理恶龙尸体，您需向城堡方支付恶龙体重100倍的金币作为违约金（金币需为纯手工打造，且每枚金币需刻有城堡管家的指纹）。
+                补充条款1.1：搬运恶龙尸体时，您需全程背诵城堡指定的《屠龙者守则》，该守则共计7777个字，需一字不差背诵，背诵错误一次需重新搬运尸体7次；
+                补充条款1.2：掩埋恶龙尸体前，您需为恶龙进行7天7夜的哀悼仪式，仪式期间需每日为恶龙擦拭鳞片，擦拭力度需控制在0.7牛顿，且需使用您的头发作为擦拭工具；
+                补充条款1.3：种植荆棘时，每棵荆棘需浇水777滴晨露，晨露需在每日凌晨3点14分收集，收集工具需为您的手掌，不得使用任何容器；
+                补充条款1.4：如恶龙尸体在处理过程中发生魔法复活，您需重新击败恶龙，且此次击败不得使用任何武器，仅能使用您的拳头，击败后需重新按照上述要求处理尸体；
+                补充条款1.5：处理完恶龙尸体后，您需撰写77页的尸体处理报告，报告需详细记录每一个步骤的时间、温度、湿度、您的心跳频率等数据，报告需用鹅毛笔书写，墨水需为您的血液混合恶龙的胆汁。`,
+                prankId: 0,
+                isFixedFirst: true // 标记为固定第一个显示的条款
+            },
+            {
+                title: "2. 冒险装备自备强制条款",
+                content: `您郑重声明，冒险过程中所需的所有装备均需自行准备，城堡方仅提供"精神层面的鼓励"，且该鼓励的具体形式、时长、语气均由城堡管家随机决定；
+                您承诺自备的装备需满足以下要求：剑的长度需为您身高的1.007倍，剑柄需缠绕恶龙幼崽的毛发（需自行收集，且不得伤害幼崽）；盾牌需由您的眼泪混合晨露锻造而成，且需在满月之夜完成最后一道工序；
+                盔甲的重量需精确等于您的体重减去3.14159公斤，且需每日更换内衬，内衬材质需为独角兽的胡须（需自行捕捉独角兽且不得造成其任何不适）；
+                冒险用的靴子需具备在岩浆中行走3分14秒不熔化的能力，且需每周涂抹恶龙唾液进行保养（唾液需自行从击败的恶龙口中提取）；
+                如装备未达到上述要求，城堡方有权拒绝您进入城堡领取任务，且需重新准备装备，重新准备的时间不计入冒险时长，由此导致的任务超时后果由您自行承担。
+                补充条款2.1：您的剑需每日打磨7小时，打磨工具需为恶龙的牙齿，打磨时需念诵77遍《铸剑咒》，咒语内容需向城堡图书馆的老法师请教，且需支付77枚金币作为咨询费；
+                补充条款2.2：您的盾牌需每日涂抹7层魔法防护涂层，涂层材料需为您的汗水混合星光粉末，星光粉末需在无云的夜晚收集，收集时长需为7小时；
+                补充条款2.3：您的盔甲需每周进行7次魔法净化，净化地点需为恶龙巢穴的岩浆池旁，净化时需将盔甲完全浸入岩浆7秒，且您需在旁守护不得离开；
+                补充条款2.4：您的靴子需每日更换7层鞋底，鞋底材料需为恶龙的皮，裁剪鞋底时需保证每片皮的面积精确为77平方厘米，误差不得超过0.01平方厘米；
+                补充条款2.5：所有装备需在每日日出前进行7分钟的祈祷仪式，祈祷内容需为城堡指定的77句祷文，祷文需用古精灵语念诵，发音错误一次需重新祈祷7次。`,
+                prankId: 1,
+                specialPrank: true // 标记为有特殊坑人效果的条款
+            },
+            {
+                title: "3. 恶龙对话礼仪规范条款",
+                content: `您同意在与恶龙对峙及战斗过程中，需严格遵守以下对话礼仪：首次见到恶龙时，需行90度鞠躬礼并使用古精灵语问候（语言版本以恶龙当天的心情为准）；
+                与恶龙对话时，音量需控制在23.7分贝（允许误差±0.1分贝），语速需为每分钟77个音节，且不得使用任何包含"杀""灭""击败"等攻击性词汇；
+                恶龙发言时，您需保持单脚站立姿势认真聆听，且每听完一句话需鼓掌7次，鼓掌的力度需恰好使恶龙的鳞片轻微震动但不脱落；
+                战斗过程中如恶龙提出休息要求，您需立即停止攻击，且需为恶龙准备冰镇岩浆（温度需控制在666℃±1℃）和烤侏儒饼干（侏儒需为自愿参与，且饼干需撒上彩虹粉末）；
+                如违反上述对话礼仪，恶龙有权拒绝与您战斗，且您需向恶龙道歉并赔偿其精神损失费（赔偿形式为为恶龙梳理鳞片，梳理时长为7个昼夜，且需使用您的头发作为梳理工具）。
+                补充条款3.1：与恶龙对话前，您需进行7分钟的漱口仪式，漱口液需为城堡提供的魔法圣水，圣水需每日更换，且需自行前往城堡地窖领取；
+                补充条款3.2：您需提前学习77句恶龙常用语，学习资料需向恶龙的生前好友购买，购买费用为您所有财产的70%；
+                补充条款3.3：与恶龙对话时，您的眼神需始终注视恶龙的左眼，不得看向其他部位，每偏离1秒需向恶龙道歉7次；
+                补充条款3.4：为恶龙准备冰镇岩浆时，您需使用纯金打造的容器，容器容量需为7升，且需保证岩浆温度每分钟下降7℃，直至达到指定温度；
+                补充条款3.5：为恶龙梳理鳞片时，您需使用7根不同材质的梳子，每根梳子需梳理777下，且需保证每一下的力度完全一致，误差不得超过0.1牛顿。`,
+                prankId: 2
+            },
+            {
+                title: "4. 公主救援附加条款",
+                content: `您确认理解并接受，成功击败恶龙后救援公主的过程需遵守以下附加条款：公主的移动速度需严格控制在每分钟7.7步，且每走三步需原地旋转7圈（旋转方向由公主随机指定）；
+                救援路线需避开所有平坦道路，优先选择布满荆棘、陷阱、魔法迷雾的路径，且需背着公主行走，公主的脚不得接触地面（包括但不限于泥土、石头、魔法平台）；
+                救援过程中公主提出的任何要求（包括但不限于采摘会唱歌的毒蘑菇、与会说话的石头聊天、收集流星碎片）您均需无条件满足，且需在公主指定的时间（精确到秒）内完成；
+                回到城堡后，您需为公主准备77道由恶龙鳞片烹饪的菜肴（烹饪方法需符合公主的口味，且不得使用任何调味料），且需亲自喂食，喂食时需使用纯金打造的勺子（勺子需由您自行锻造）；
+                如救援过程中公主出现任何不满情绪（包括但不限于皱眉、叹气、沉默超过7秒），您需重新进行救援，重新救援的次数不限，直至公主完全满意为止。
+                补充条款4.1：背着公主行走时，您的步频需控制在每分钟77步，步幅需为77厘米，且需每走7步停顿7秒，让公主欣赏沿途风景；
+                补充条款4.2：采摘会唱歌的毒蘑菇时，您需使用公主指定的7根手指采摘，且需保证蘑菇在采摘后继续唱歌7分钟，如停止唱歌需重新采摘77朵；
+                补充条款4.3：与会说话的石头聊天时，您需记录石头所说的每一句话，记录需使用公主的头发作为笔，公主的眼泪作为墨水，记录完成后需背诵给公主听；
+                补充条款4.4：收集流星碎片时，您需在流星划过天空的7秒内完成收集，收集工具需为您的手掌，且需保证碎片温度不低于777℃；
+                补充条款4.5：烹饪恶龙鳞片菜肴时，您需使用7种不同的烹饪方法，每种方法需烹饪7小时，且需在烹饪过程中为公主表演77个魔术，魔术内容需由公主指定。`,
+                prankId: 3
+            },
+            {
+                title: "5. 魔法使用限制特殊条款",
+                content: `您承诺在冒险过程中使用魔法时需遵守以下限制：每日使用魔法的次数需为质数（具体数值由城堡魔法塔随机生成），且每次使用魔法的间隔需为7分23秒；
+                攻击性魔法的威力需控制在恰好能划伤恶龙鳞片但不造成出血的程度，治疗魔法仅能用于治疗恶龙的轻微不适（如鳞片瘙痒、牙齿酸痛），不得用于治疗自身任何伤势；
+                传送魔法的使用范围不得超过您当前位置的7米，且传送目的地需为随机生成的危险区域（如恶龙的巢穴、岩浆池、魔法陷阱中心）；
+                变形魔法仅允许将自己变为恶龙的食物（如烤野猪、魔法浆果、侏儒饼干），且变形时长需为恶龙进食的时间（具体时长由恶龙决定）；
+                如违反上述魔法使用限制，您的魔法能力将被暂时封印，封印时长为您剩余的冒险时间乘以7，且您需向城堡魔法塔缴纳魔法罚金（罚金形式为您的部分记忆，具体提取哪些记忆由魔法塔决定）。
+                补充条款5.1：使用魔法前，您需向城堡魔法塔提交7页的魔法使用申请，申请需详细说明使用魔法的时间、地点、目的、预期效果等信息，申请需由魔法塔塔长签字批准；
+                补充条款5.2：您需每日练习7小时魔法控制，练习内容需为77个不同的魔法手势，每个手势需练习777次，且需保证每个手势的精准度达到0.001度；
+                补充条款5.3：使用攻击性魔法时，您需提前7分钟告知恶龙，让恶龙做好防护准备，且需保证魔法仅作用于恶龙指定的鳞片区域；
+                补充条款5.4：使用治疗魔法时，您需使用7种不同的魔法草药，草药需自行采摘，且需保证每种草药的新鲜度不低于7天；
+                补充条款5.5：变形为恶龙食物后，您需保持该形态7小时，且需配合恶龙的进食节奏，不得有任何反抗行为，如恶龙不满意需重新变形7次。`,
+                prankId: 4
+            },
+            {
+                title: "6. 冒险时间精准控制条款",
+                content: `您同意冒险的总时长需精确控制在77小时7分7秒（允许误差±0.001秒），且每个阶段的时长需严格遵循以下要求：从城堡出发到恶龙巢穴的时间需为17小时35分42秒；
+                与恶龙对峙的时间需为7小时13分58秒；击败恶龙的时间需为3小时14分15秒；处理恶龙尸体的时间需为23小时47分29秒；救援公主返回城堡的时间需为26小时16分33秒；
+                如任何阶段的时长超出误差范围，您需重新进行该阶段的冒险，重新冒险的时间不计入总时长，且需在原有时长的基础上增加7%的时长；
+                冒险过程中不得使用任何计时工具，您需依靠自身的生物时钟判断时间，生物时钟的精准度需达到原子钟级别（如未达到，需向城堡方支付时间校准费）；
+                如因时间控制不当导致冒险超时，您需在城堡的地牢中反思，反思时长为超时时间的700倍，反思期间仅能食用恶龙剩下的食物残渣。
+                补充条款6.1：您需每日校准自己的生物时钟7次，校准方法需为城堡指定的7种冥想方式，每种方式需冥想77分钟，且需在城堡的钟楼旁进行；
+                补充条款6.2：每个冒险阶段开始前，您需向城堡计时官提交7分钟的准备报告，报告需详细说明您将如何控制该阶段的时间，报告需由计时官签字确认；
+                补充条款6.3：如某个阶段的时长提前完成，您需在原地等待剩余时间，等待期间需保持站立姿势，且需每7秒念诵一次《时间守则》，守则内容共计777个字；
+                补充条款6.4：您需随身携带7种不同的时间参照物，包括但不限于沙漏、日晷、魔法水晶球等，这些参照物仅用于校准生物时钟，不得用于直接计时；
+                补充条款6.5：冒险结束后，您需撰写77页的时间控制报告，报告需详细记录每个阶段的实际用时、误差原因、改进措施等内容，报告需提交给城堡议会审核。`,
+                prankId: 5
+            },
+            {
+                title: "7. 恶龙宝藏分配独占条款",
+                content: `您确认理解并接受，击败恶龙后获得的所有宝藏（包括但不限于金币、宝石、魔法道具、古代卷轴）的99.999%归城堡方所有，您仅能获得0.001%的宝藏，且该部分宝藏需满足以下条件：
+                金币需为边缘有缺口且重量不足标准值的残次品；宝石需为颜色暗淡且内部有裂纹的劣质品；魔法道具需为已失效且无法修复的破损品；古代卷轴需为字迹模糊且内容为恶龙食谱的残卷；
+                您承诺不会对宝藏分配比例提出任何异议，且需在领取宝藏后向城堡方支付宝藏保管费（保管费金额为您获得宝藏价值的700%）；
+                如发现您私藏任何宝藏，您需将私藏宝藏的700倍价值赔偿给城堡方，且需在恶龙巢穴中独自居住77天作为惩罚，居住期间仅能饮用岩浆和食用岩石；
+                您获得的0.001%宝藏需用于购买城堡方提供的"冒险纪念徽章"，徽章的价格由城堡方随机决定，且需一次性付清，不接受任何形式的议价。
+                补充条款7.1：领取宝藏时，您需签署7份不同语言的放弃声明，声明需放弃对剩余99.999%宝藏的所有权利，声明需由城堡公证官见证签署；
+                补充条款7.2：宝藏保管费需在领取宝藏后的7分钟内付清，支付方式需为纯金打造的硬币，硬币需刻有您的指纹和城堡徽章，且需亲自送到城堡财务官手中；
+                补充条款7.3：如您选择不购买冒险纪念徽章，您需向城堡方支付777枚金币作为放弃费，且需在城堡的广场上公开道歉77分钟；
+                补充条款7.4：您获得的宝藏需每日向城堡报备7次，报备内容包括宝藏的数量、位置、状态等，报备需使用城堡指定的7种格式；
+                补充条款7.5：如您的宝藏被盗或丢失，城堡方不承担任何责任，且需向城堡方支付宝藏价值7倍的赔偿金，赔偿金需在7天内付清。`,
+                prankId: 6
+            },
+            {
+                title: "8. 冒险日志撰写强制条款",
+                content: `您承诺在冒险过程中需每日撰写冒险日志，日志需满足以下要求：每日日志的字数需为777字（允许误差±1字），且需使用恶龙的血液作为墨水（血液需从击败的恶龙身上提取，且需保证新鲜度）；
+                日志内容需详细记录每分每秒的行动（包括但不限于呼吸次数、心跳频率、眨眼间隔），且需使用第三人称视角，语言风格需符合城堡史官的要求（风格标准每日更新，您需自行查阅）；
+                日志需在每日午夜12点整提交给城堡史官，提交方式需为亲自送到史官的卧室（无论史官是否在睡觉），且需行跪拜礼后双手奉上；
+                史官对日志的修改意见需无条件接受，且需在7分钟内完成修改，修改次数不限，直至史官完全满意；
+                如未按要求撰写或提交日志，您需重新撰写从冒险开始到当前时间的所有日志，且需使用自己的眼泪代替墨水，撰写过程中不得休息、进食、饮水。
+                补充条款8.1：您需每日练习7小时的日志撰写技巧，练习内容需为77种不同的书写风格，每种风格需练习777个字，且需使用恶龙的血液作为墨水；
+                补充条款8.2：日志中记录的每一个数据都需有7种不同的验证方式，验证材料需附在日志后面，验证材料需由城堡指定的7位官员签字确认；
+                补充条款8.3：提交日志时，您需为史官准备7份不同的小礼物，礼物需为您亲手制作，且需符合史官当日的心情（心情需提前向史官的仆人打听）；
+                补充条款8.4：如史官对日志不满意，您需在史官的监督下重新撰写，重新撰写期间需保持站立姿势，且需每7秒喝一滴恶龙的胆汁作为惩罚；
+                补充条款8.5：冒险结束后，您的所有日志需装订成7册，每册需有77页，且需存放在城堡图书馆的禁地，您终身不得查阅。`,
+                prankId: 7
+            },
+            {
+                title: "9. 恶龙亲友安抚义务条款",
+                content: `您同意在击败恶龙后，需承担安抚恶龙亲友的全部义务，包括但不限于：向恶龙的父母（如仍在世）道歉并赠送77件由您亲手制作的礼物（礼物需为恶龙生前最喜爱的物品，且需包含您的头发、指甲、血液等个人物品）；
+                为恶龙的配偶（如有的话）提供终身免费的岩浆浴服务，且需亲自调试岩浆的温度、酸碱度、矿物质含量（参数需符合恶龙配偶的要求）；
+                抚养恶龙的幼崽直至成年，抚养期间需教授其所有的恶龙技能（包括但不限于喷火、飞行、破坏城堡），且需保证幼崽的饮食、居住、娱乐条件不低于您自己的标准；
+                每年恶龙的忌日，您需前往恶龙的墓地进行祭拜，祭拜仪式需包括77次鞠躬、77首悼亡诗（需为原创且需用古龙族语朗诵）、77天的守墓；
+                如未履行上述安抚义务，恶龙的亲友有权向您发起复仇，您承诺不会反抗，且需自行承担复仇带来的所有损失（包括但不限于财产损失、身体伤害、精神创伤）。
+                补充条款9.1：向恶龙父母道歉时，您需行77次跪拜礼，且需背诵777句道歉语，道歉语需用古龙族语念诵，发音错误一次需重新道歉7次；
+                补充条款9.2：为恶龙配偶准备岩浆浴时，您需每日测试7次岩浆的各项参数，测试结果需记录在7本不同的记录本上，记录本需由恶龙配偶签字确认；
+                补充条款9.3：抚养恶龙幼崽时，您需每日为幼崽准备77种不同的食物，食物需符合幼崽的口味，且需保证每种食物的温度精确为77℃；
+                补充条款9.4：教授恶龙幼崽技能时，您需使用7种不同的教学方法，每种方法需教学77小时，且需保证幼崽完全掌握后才能进行下一种技能的教学；
+                补充条款9.5：守墓期间，您需每日为恶龙的墓碑擦拭77次，擦拭工具需为您的头发，且需每日为墓碑献上77朵恶龙生前最喜爱的魔法花朵。`,
+                prankId: 8
+            },
+            {
+                title: "10. 冒险后城堡服务强制条款",
+                content: `您确认在成功完成冒险并救援公主后，需为城堡提供以下终身免费服务：每日为城堡的护城河清理淤泥，清理深度需达到7米，且需使用自己的双手（不得使用任何工具）；
+                每周为城堡的厨房捕捉77只魔法青蛙（青蛙需为会唱歌的品种，且需在满月之夜捕捉），且需保证青蛙的存活率为100%；
+                每月为城堡的图书馆整理777本魔法书籍，整理时需使用纯金打造的书签（书签需由您自行锻造），且需记住每本书的内容，以便城堡成员随时提问；
+                每年为城堡的庆典表演7场屠龙模仿秀，表演时需穿着恶龙的皮（需自行处理且需保证皮的完整度），且需模仿恶龙的叫声、动作、甚至思维方式（思维方式需符合城堡管家的想象）；
+                如拒绝提供上述服务或服务质量未达到城堡方的要求，您需放弃所有冒险奖励，且需重新进行7次屠龙冒险，每次冒险的难度均为前一次的7倍。
+                补充条款10.1：清理护城河淤泥时，您需每日清理7立方米的淤泥，清理时间需控制在7小时内，且需保证每立方米淤泥的含水量精确为77%；
+                补充条款10.2：捕捉魔法青蛙时，您需使用7种不同的捕捉工具，每种工具需捕捉7只青蛙，且需保证青蛙在捕捉过程中持续唱歌，如停止唱歌需重新捕捉；
+                补充条款10.3：整理魔法书籍时，您需为每本书撰写77字的内容摘要，摘要需用古精灵语书写，且需保证摘要内容与原书完全一致；
+                补充条款10.4：表演屠龙模仿秀时，您需提前7天进行排练，每日排练7小时，且需邀请城堡管家观看彩排，管家提出的任何修改意见需无条件接受；
+                补充条款10.5：所有服务需在城堡指定的时间完成，如未能按时完成，您需在城堡的广场上接受77分钟的公开批评，且需额外提供7天的免费服务作为惩罚。`,
+                prankId: 9
+            },
+            {
+                title: "11. 魔法咒语发音精准条款",
+                content: `您承诺在使用任何魔法咒语时，发音需达到以下精准要求：每个音节的时长需为0.7秒（允许误差±0.001秒），音调需与城堡魔法塔的标准音高完全一致（标准音高每日更换，您需提前学习）；
+                咒语的重音位置需严格遵循恶龙的语言习惯（习惯内容需向恶龙的生前好友请教，且需支付7枚金币作为咨询费）；
+                念咒时的呼吸频率需为每分钟7次，且需在念咒的最后一个音节时屏住呼吸7秒；
+                如咒语发音出现任何偏差，魔法将随机反噬到您身上（反噬效果包括但不限于头发变白、声音变细、长出恶龙的鳞片），且您需向魔法塔支付发音矫正费（费用为您所有的魔法能力）；
+                您承诺每日花费7小时练习咒语发音，练习地点需为恶龙巢穴的最深处，且需在练习时录制视频，视频需每日提交给魔法塔审核，审核不通过需重新练习。
+                补充条款11.1：您需购买魔法塔提供的7种不同的发音练习工具，包括但不限于魔法调音器、音节计时器、呼吸训练仪等，购买费用需一次性付清；
+                补充条款11.2：每次练习咒语发音前，您需进行7分钟的热身运动，热身运动需为魔法塔指定的7个动作，每个动作需重复77次；
+                补充条款11.3：录制练习视频时，您需使用魔法塔提供的7种不同的录制设备，每种设备需录制7分钟的练习内容，且需保证视频画面清晰、声音无杂音；
+                补充条款11.4：如魔法塔审核不通过，您需在魔法塔塔长的监督下重新练习77小时，练习期间不得进食、饮水、休息；
+                补充条款11.5：您需参加魔法塔每月举办的咒语发音考试，考试内容为77个不同的咒语，考试成绩需达到77分（满分100分），未达标需重新学习7天。`,
+                prankId: 10
+            },
+            {
+                title: "12. 冒险饮食限制专属条款",
+                content: `您同意在冒险期间的饮食需严格遵守以下限制：每日仅能食用7片恶龙鳞片（需生吞且不得咀嚼）、7滴岩浆（需在正午12点整饮用）、7粒魔法尘埃（需从城堡的吊灯上收集）；
+                饮用水需为城堡护城河的水，且需在饮用前过滤77次（过滤工具需为您的衣服，且过滤后衣服需继续穿着不得清洗）；
+                不得食用任何肉类、蔬菜、水果，除非该食物由恶龙的胃酸烹饪而成（烹饪时长需为7小时，且需在恶龙的胃中完成）；
+                进餐时间需严格控制在每日的7点、14点、21点，每次进餐时长需为7分7秒，且需站着进食，不得使用任何餐具（包括但不限于勺子、叉子、手）；
+                如违反上述饮食限制，您的味觉将被暂时封印77小时，且需在接下来的7天内仅能食用城堡地牢中的霉面包和馊水。
+                补充条款12.1：收集魔法尘埃时，您需使用7种不同的收集工具，每种工具需收集77粒尘埃，且需保证每粒尘埃的大小精确为0.7毫米；
+                补充条款12.2：过滤护城河的水时，您需按照城堡指定的77种过滤步骤进行，每一步骤需耗时77秒，且需记录每一步的过滤效果；
+                补充条款12.3：如您选择食用恶龙胃酸烹饪的食物，您需提前7天向恶龙的胃中投放7种不同的调味料，调味料需为您的汗水混合魔法草药；
+                补充条款12.4：进餐时，您需每7秒念诵一次《饮食守则》，守则内容共计777个字，需一字不差念诵，念诵错误一次需重新开始进餐；
+                补充条款12.5：您需每日记录自己的饮食情况，记录需包括进食时间、食物种类、进食量等信息，记录需提交给城堡的营养师审核，审核不通过需接受7小时的饮食教育。`,
+                prankId: 11
+            },
+            {
+                title: "13. 城堡宠物投喂义务条款",
+                content: `您确认在冒险前、冒险中、冒险后均需承担城堡宠物的投喂义务，城堡宠物包括但不限于：会喷火的仓鼠（每日需投喂7颗硫磺糖果）、会咬人的蜗牛（每日需投喂7片恶龙的指甲）、
+                会哭泣的石像（每日需投喂7滴您的眼泪）、会诅咒的蚊子（每日需投喂7根您的头发）；
+                投喂时间需精确到秒（具体时间由宠物的心情决定），投喂方式需为跪姿且需用舌头将食物送入宠物口中；
+                如宠物对食物不满意（表现为发出超过7分贝的叫声），您需重新准备食物，重新准备的食物需为您的随身物品（如剑的碎片、盔甲的内衬、冒险日志的纸张）；
+                投喂过程中如被宠物咬伤、抓伤、诅咒，您承诺不会寻求任何治疗，且需向宠物道歉并赔偿其精神损失费（赔偿形式为为宠物按摩77分钟）；
+                如未履行投喂义务，城堡方有权取消您的冒险资格，且需您为宠物提供77天的贴身服务（包括但不限于梳理毛发、清洁住所、陪玩游戏）。
+                补充条款13.1：制作硫磺糖果时，您需使用7种不同的硫磺矿石，每种矿石需研磨77分钟，且需在满月之夜完成最后一道制作工序；
+                补充条款13.2：收集恶龙的指甲时，您需使用7种不同的工具，每种工具需收集7片指甲，且需保证每片指甲的长度精确为7毫米；
+                补充条款13.3：为宠物按摩时，您需使用7种不同的按摩手法，每种手法需按摩77分钟，且需保证按摩力度精确为0.7牛顿；
+                补充条款13.4：为宠物清洁住所时，您需使用7种不同的清洁工具，每种工具需清洁77分钟，且需保证住所的清洁度达到城堡指定的77项标准；
+                补充条款13.5：陪宠物玩游戏时，您需每日陪玩7小时，游戏内容需为宠物指定的77种不同游戏，且需保证宠物每7分钟笑一次。`,
+                prankId: 12
+            },
+            {
+                title: "14. 屠龙姿势规范条款",
+                content: `您同意在击败恶龙时需使用以下规范姿势：站立的位置需与恶龙的心脏呈77度夹角（允许误差±0.1度），持剑的手臂需与地面平行，另一只手需举过头顶且手指需摆出城堡徽章的形状；
+                刺向恶龙的瞬间，您的眼睛需看向城堡的方向，且需喊出城堡管家指定的口号（口号内容每日更换，且需用古龙族语喊出）；
+                屠龙的最后一击需在月亮位于天空77度角时完成（角度以城堡天文台的测量结果为准），且需使用剑的第7个凹槽接触恶龙的心脏；
+                屠龙完成后，您需保持该姿势7分钟不动，直至城堡史官完成记录和拍照（拍照时您需保持微笑，且不得眨眼）；
+                如屠龙姿势不符合要求，您需重新与恶龙战斗（恶龙将被魔法复活，且复活后的实力为之前的7倍），重新战斗的次数不限，直至姿势完全符合规范。
+                补充条款14.1：每日练习屠龙姿势7小时，练习地点需为恶龙巢穴的模拟场地，且需有7位城堡官员在场监督，每位官员需提出7条修改意见；
+                补充条款14.2：确定站立位置时，您需使用7种不同的测量工具，每种工具需测量77次，且需保证测量结果的误差不超过0.001度；
+                补充条款14.3：喊出屠龙口号前，您需进行7分钟的发音练习，练习内容需由城堡管家亲自指导，且需支付77枚金币作为指导费；
+                补充条款14.4：等待城堡史官记录和拍照时，您需保持该姿势7分钟，期间不得眨眼、呼吸频率需控制在每分钟7次，且需每7秒念诵一次《屠龙守则》；
+                补充条款14.5：如屠龙姿势被判定为不合格，您需接受77小时的姿势矫正训练，训练期间需佩戴魔法枷锁，限制身体的所有多余动作。`,
+                prankId: 13
+            },
+            {
+                title: "15. 冒险失败赔偿天价条款",
+                content: `您郑重声明，如冒险失败（包括但不限于被恶龙击败、未按时救援公主、未按要求处理恶龙尸体），您需向城堡方支付以下赔偿：
+                您的所有财产（包括但不限于金币、房产、魔法道具、祖传宝物）；您未来77代子孙的所有收入的70%；您的记忆（除了冒险失败的记忆外的所有记忆）；
+                您需在城堡的地牢中服劳役777年，劳役内容包括但不限于清理恶龙的粪便、打磨城堡的墙壁、为城堡管家擦鞋（擦鞋时需使用自己的舌头）；
+                您的名字将被刻在城堡的耻辱柱上，且需每日亲自擦拭耻辱柱，擦拭时需大声朗读自己的失败经历，朗读音量需达到77分贝（允许误差±0.1分贝）；
+                如无法支付上述赔偿，您需将自己的灵魂抵押给城堡的魔法塔，抵押期限为永久，魔法塔有权将您的灵魂用于任何目的（包括但不限于驱动魔法装置、喂养魔法生物、制作魔法道具）。
+                补充条款15.1：如您选择支付财产赔偿，您需在7天内将所有财产转移至城堡账户，转移过程需有7位城堡公证官在场见证，且需支付转移金额7%的手续费；
+                补充条款15.2：您需与未来77代子孙签订7份不同的赔偿协议，协议需由城堡律师起草，且需支付777枚金币作为律师费；
+                补充条款15.3：在服劳役期间，您需每日工作77小时，且需保证每一项劳役的质量达到城堡指定的77项标准，未达标需额外工作7小时；
+                补充条款15.4：擦拭耻辱柱时，您需使用7种不同的擦拭工具，每种工具需擦拭77分钟，且需保证耻辱柱的清洁度达到镜面效果；
+                补充条款15.5：如您选择抵押灵魂，您需签署7份不同语言的灵魂抵押协议，协议需在魔法塔塔长的见证下签署，且需支付7777枚金币作为协议公证费。`,
+                prankId: 14
+            },
+            // 新增条款
+            {
+                title: "16. 按钮文字混淆陷阱条款",
+                content: `您同意在使用城堡提供的任何交互按钮时，需仔细辨认按钮文字与实际功能的对应关系，城堡方保留随时调换按钮显示文字的权利，且无需提前告知；
+                如因误点击导致的任何后果（包括但不限于同意变不同意、不同意变同意），均由您自行承担，城堡方不承担任何责任；
+                您承诺不会因按钮文字显示错误而向城堡方提出任何投诉或索赔，且需接受城堡方的最终解释权。`,
+                prankId: 15 // 新的坑人效果ID
+            }
+        ];
+
+        // 2. 坑人效果（新增按钮文字互换效果）
+        const prankEffects = [
+            () => { 
+                // 条款1坑人效果：无效果（已禁用）
+            },
+            () => { 
+                // 条款2坑人效果：特殊处理 - 按钮移到内容区底部+缩小内容区
+                const contentEl = document.getElementById('termsContent');
+                const bottomButtons = document.getElementById('bottomButtons');
+                const inlineButtons = document.getElementById('inlineButtons');
+                
+                // 缩小内容区高度
+                contentEl.classList.add('small-height');
+                // 隐藏底部按钮
+                bottomButtons.classList.add('hide-buttons');
+                // 显示内嵌按钮
+                inlineButtons.style.display = 'flex';
+                // 滚动到最底部（玩家需要自己滑动才能看到）
+                // 这里故意不自动滚动，让玩家自己滑
+            },
+            () => { 
+                // 条款3坑人效果：文字轻微晃动
+                const contentEl = document.getElementById('termsContent');
+                contentEl.style.transform = 'rotate(1deg)';
+                setTimeout(() => {
+                    contentEl.style.transform = 'rotate(-1deg)';
+                    setTimeout(() => {
+                        contentEl.style.transform = 'rotate(0)';
+                    }, 50);
+                }, 50);
+            },
+            () => { 
+                // 条款4坑人效果：短暂改变鼠标样式
+                document.body.style.cursor = 'url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'20\' height=\'20\'><text x=\'0\' y=\'15\' font-size=\'20\'>🐉</text></svg>"), auto';
+                setTimeout(() => {
+                    document.body.style.cursor = '';
+                }, 1000);
+            },
+            () => { 
+                // 条款5坑人效果：标题栏文字短暂变化
+                const titleEl = document.querySelector('.win7-titlebar span');
+                const originalText = titleEl.textContent;
+                titleEl.textContent = '恶龙的复仇条款';
+                setTimeout(() => {
+                    titleEl.textContent = originalText;
+                }, 500);
+            },
+            () => { 
+                // 条款6坑人效果：条款内容短暂变模糊
+                const contentEl = document.getElementById('termsContent');
+                contentEl.style.filter = 'blur(2px)';
+                setTimeout(() => {
+                    contentEl.style.filter = '';
+                }, 300);
+            },
+            () => { 
+                // 条款7坑人效果：页面短暂缩放
+                const windowEl = document.querySelector('.terms-window');
+                windowEl.style.transform = 'scale(0.98)';
+                setTimeout(() => {
+                    windowEl.style.transform = '';
+                }, 200);
+            },
+            () => { 
+                // 条款8坑人效果：文字颜色短暂变红
+                const contentEl = document.getElementById('termsContent');
+                contentEl.style.color = '#EF4444';
+                setTimeout(() => {
+                    contentEl.style.color = '';
+                }, 300);
+            },
+            () => { 
+                // 条款9坑人效果：按钮位置轻微偏移
+                const btnContainer = document.querySelector('.terms-buttons-container');
+                btnContainer.style.transform = 'translateY(5px)';
+                setTimeout(() => {
+                    btnContainer.style.transform = '';
+                }, 200);
+            },
+            () => { 
+                // 条款10坑人效果：背景色短暂变化
+                const contentEl = document.getElementById('termsContent');
+                contentEl.style.backgroundColor = '#FFF3E0';
+                setTimeout(() => {
+                    contentEl.style.backgroundColor = '';
+                }, 300);
+            },
+            () => { 
+                // 条款11坑人效果：文字大小短暂变化
+                const contentEl = document.getElementById('termsContent');
+                contentEl.style.fontSize = '13px';
+                setTimeout(() => {
+                    contentEl.style.fontSize = '';
+                }, 200);
+            },
+            () => { 
+                // 条款12坑人效果：滚动条短暂消失
+                const contentEl = document.getElementById('termsContent');
+                contentEl.style.overflow = 'hidden';
+                setTimeout(() => {
+                    contentEl.style.overflow = '';
+                }, 300);
+            },
+            () => { 
+                // 条款13坑人效果：目录项短暂变色
+                const directoryItems = document.querySelectorAll('.directory-item');
+                directoryItems.forEach(item => {
+                    item.style.color = '#F59E0B';
+                });
+                setTimeout(() => {
+                    directoryItems.forEach(item => {
+                        item.style.color = '';
+                    });
+                }, 300);
+            },
+            () => { 
+                // 条款14坑人效果：标题栏背景色短暂变化
+                const titleEl = document.querySelector('.win7-titlebar');
+                titleEl.style.background = 'linear-gradient(to right, #F59E0B 0%, #D97706 100%)';
+                setTimeout(() => {
+                    titleEl.style.background = '';
+                }, 300);
+            },
+            () => { 
+                // 条款15坑人效果：页面短暂震动
+                document.body.style.transform = 'translateY(3px)';
+                setTimeout(() => {
+                    document.body.style.transform = 'translateY(-3px)';
+                    setTimeout(() => {
+                        document.body.style.transform = '';
+                    }, 50);
+                }, 50);
+            },
+            () => { 
+                // 条款16坑人效果：新增 - 按钮文字互换（保留原有颜色）
+                // 获取所有同意/不同意按钮
+                const agreeButtons = document.querySelectorAll('.agree-btn');
+                const disagreeButtons = document.querySelectorAll('.disagree-btn');
+                
+                // 保存原始文字
+                const originalAgreeText = [];
+                const originalDisagreeText = [];
+                
+                // 互换文字
+                agreeButtons.forEach((btn, index) => {
+                    originalAgreeText[index] = btn.textContent;
+                    btn.textContent = '不同意';
+                });
+                
+                disagreeButtons.forEach((btn, index) => {
+                    originalDisagreeText[index] = btn.textContent;
+                    btn.textContent = '同意';
+                });
+                
+                // 3秒后恢复原始文字
+                setTimeout(() => {
+                    agreeButtons.forEach((btn, index) => {
+                        btn.textContent = originalAgreeText[index] || '同意';
+                    });
+                    
+                    disagreeButtons.forEach((btn, index) => {
+                        btn.textContent = originalDisagreeText[index] || '不同意';
+                    });
+                }, 3000);
+            }
+        ];
+
+        // 全局变量：随机后的条款列表、当前条款索引
+        let randomTerms = [];
+        let currentTermIndex = 0;
+        
+        // ========== 关卡系统 ==========
+        // 关卡数据结构
+        const levels = [
+            {
+                id: 1,
+                type: "agreeChallenge",
+                name: "错窗",
+                description: "点击同意后将面临多个确认窗口",
+                windowCount: 15, // 增加窗口数量，让玩家感觉很多
+                currentWindowIndex: 0
+            },
+            {
+                id: 2,
+                type: "readChallenge",
+                name: "阅读",
+                description: "点击假同意按钮后需要疯狂下滑才能找到真按钮",
+                isFakeAgreeClicked: false
+            },
+            {
+                id: 3,
+                type: "whackAMoleChallenge",
+                name: "地鼠",
+                description: "点击出现的同意按钮得分，达到10分通关",
+                score: 0,
+                targetScore: 10,
+                minScore: -3,
+                gridSize: { rows: 4, cols: 3 },
+                buttonTypes: [
+                    { type: 'agree', class: 'agree-btn', text: '同意', points: 1 },
+                    { type: 'disagree', class: 'disagree-btn', text: '不同意', points: -1 },
+                    { type: 'redAgree', class: 'disagree-btn', text: '同意', points: 1 },
+                    { type: 'greenDisagree', class: 'agree-btn', text: '不同意', points: -1 }
+                ],
+                activeButtons: []
+            },
+            {
+                id: 4,
+                type: "experienceChallenge",
+                name: "经验",
+                description: "点击同意按钮积累经验值，达到150点通关",
+                score: 0,
+                targetScore: 150,
+                consecutiveClicks: 0,
+                maxMultiplier: 5,
+                buttonPositions: ["disagree", "agree"], // 初始位置：不同意在左，同意在右
+                milestones: [50, 90, 140], // 保持逻辑上的90分里程碑
+                visualMilestones: [50, 110, 140], // 视觉上的提示线位置，误导玩家
+                lastMilestone: 0
+            },
+            {
+                id: 5,
+                type: "movementChallenge",
+                name: "移动",
+                description: "将鼠标靠近原本的同意键时，同意键会跑，避开鼠标",
+                gameOver: false
+            },
+            {
+                id: 6,
+                type: "backChallenge",
+                name: "后面",
+                description: "界面会移动，真正的按钮藏在界面后面",
+                gameOver: false,
+                isMoving: false
+            },
+            {
+                id: 7,
+                type: "confirmChallenge",
+                name: "确认",
+                description: "点击所有同意框后才能通关",
+                gameOver: false,
+                checkedBoxes: 0,
+                totalBoxes: 8
+            },
+            {
+                id: 8,
+                type: "overlayChallenge",
+                name: "叠加",
+                description: "15个界面叠加在一起，找到有同意键的那个",
+                gameOver: false,
+                totalWindows: 15,
+                agreeWindowIndex: -1
+            }
+
+        ];
+        
+        // 已使用的关卡
+        let usedLevels = [];
+        
+        // 当前游戏会话的关卡分配
+        let currentLevelAssignments = [];
+        
+        // 检测是否是新用户（第一次访问）
+        let isNewUser = !localStorage.getItem('hasPlayedBefore');
+        
+        // 标记用户已玩过
+        if (isNewUser) {
+            localStorage.setItem('hasPlayedBefore', 'true');
+        }
+        
+        // 开始游戏 - 先显示引导弹窗，再加载条款
+        function startGame() {
+            // 隐藏主界面，显示引导弹窗
+            document.getElementById('mainMenu').classList.add('hidden');
+            document.getElementById('termsGuideModal').classList.remove('hidden');
+        }
+
+        // 关闭引导弹窗，显示条款界面
+        function closeGuideModal() {
+            try {
+                // 隐藏引导弹窗，显示条款界面
+                const termsGuideModal = document.getElementById('termsGuideModal');
+                const termsScreen = document.getElementById('termsScreen');
+                
+                if (termsGuideModal) {
+                    termsGuideModal.classList.add('hidden');
+                }
+                
+                if (termsScreen) {
+                    termsScreen.classList.remove('hidden');
+                }
+                
+                // 分配随机关卡
+                assignRandomLevels();
+                
+                // ========== 关键修改1：固定第一个条款为恶龙尸体处理条款 ==========
+                // 1. 找到固定条款
+                const fixedFirstTerm = termsLibrary.find(term => term.isFixedFirst);
+                // 2. 过滤掉固定条款，剩余条款随机打乱
+                const otherTerms = termsLibrary.filter(term => !term.isFixedFirst);
+                const shuffledOtherTerms = shuffleArray(otherTerms).slice(0, 9); // 选9个随机条款
+                // 3. 组合：固定条款 + 9个随机条款 = 10个条款
+                randomTerms = [fixedFirstTerm, ...shuffledOtherTerms];
+                
+                // 重置条款索引
+                currentTermIndex = 0;
+                
+                // 生成目录并加载第一个条款
+                generateTermsDirectory();
+                loadCurrentTerm();
+                
+                // 重置所有坑人效果
+                resetPrankEffects();
+            } catch (error) {
+                console.error("加载条款界面时出错：", error);
+                // 即使出错，也要确保条款界面显示
+                const termsScreen = document.getElementById('termsScreen');
+                if (termsScreen) {
+                    termsScreen.classList.remove('hidden');
+                }
+            }
+        }
+        
+        // 分配随机关卡
+        function assignRandomLevels() {
+            // 重置关卡分配和已使用关卡
+            currentLevelAssignments = [];
+            usedLevels = [];
+            
+            // 第一关固定为空白关卡
+            currentLevelAssignments[0] = null; // 第一关无特殊关卡
+            
+            // 为剩余9关随机分配关卡
+            for (let i = 1; i < 10; i++) {
+                // 检查特殊关卡数量是否超过10个
+                if (levels.length > 10) {
+                    // 特殊关卡数量超过10个，每个条款都分配不重复的特殊关卡
+                    if (usedLevels.length < levels.length) {
+                        // 选择未使用过的关卡
+                        const availableLevels = levels.filter(level => !usedLevels.includes(level.id));
+                        if (availableLevels.length > 0) {
+                            // 随机选择一个未使用的关卡
+                            const randomLevel = availableLevels[Math.floor(Math.random() * availableLevels.length)];
+                            currentLevelAssignments[i] = JSON.parse(JSON.stringify(randomLevel)); // 深拷贝
+                            usedLevels.push(randomLevel.id); // 标记为已使用
+                        } else {
+                            // 所有关卡都已使用，分配普通关卡
+                            currentLevelAssignments[i] = null;
+                        }
+                    } else {
+                        // 所有关卡都已使用，分配普通关卡
+                        currentLevelAssignments[i] = null;
+                    }
+                } else {
+                    // 特殊关卡数量 <= 10个，每个特殊关卡和空白关卡概率对等
+                    // 准备抽取范围
+                    const availableLevels = levels.filter(level => !usedLevels.includes(level.id));
+                    const drawPool = [...availableLevels]; // 所有可用的特殊关卡
+                    
+                    // 添加空白关卡选项
+                    drawPool.push(null); // null 代表空白关卡
+                    
+                    if (drawPool.length > 0) {
+                        // 随机选择一个选项
+                        const randomIndex = Math.floor(Math.random() * drawPool.length);
+                        const selectedOption = drawPool[randomIndex];
+                        
+                        if (selectedOption) {
+                            // 选中了特殊关卡
+                            currentLevelAssignments[i] = JSON.parse(JSON.stringify(selectedOption)); // 深拷贝
+                            usedLevels.push(selectedOption.id); // 标记为已使用
+                        } else {
+                            // 选中了空白关卡
+                            currentLevelAssignments[i] = null;
+                        }
+                    } else {
+                        // 没有可用关卡，分配普通关卡
+                        currentLevelAssignments[i] = null;
+                    }
+                }
+            }
+        }
+
+        // 返回主界面
+        function backToMain() {
+            // 检查元素是否存在
+            const termsScreen = document.getElementById('termsScreen');
+            if (termsScreen) {
+                termsScreen.classList.add('hidden');
+            }
+            
+            const mainMenu = document.getElementById('mainMenu');
+            if (mainMenu) {
+                mainMenu.classList.remove('hidden');
+            }
+            
+            // 重置引导弹窗状态，确保它是隐藏的
+            const termsGuideModal = document.getElementById('termsGuideModal');
+            if (termsGuideModal) {
+                termsGuideModal.classList.add('hidden');
+            }
+            
+            resetPrankEffects();
+        }
+
+        // 处理不同意按钮点击
+        function handleDisagree() {
+            // 清理所有关卡相关的内容
+            cleanupAllChallenges();
+            // 显示不同意提示弹窗
+            document.getElementById('disagreeModal').classList.remove('hidden');
+            // 初始化关卡
+            assignRandomLevels();
+        }
+
+        // 关闭不同意弹窗并返回主界面
+        function closeDisagreeModal() {
+            document.getElementById('disagreeModal').classList.add('hidden');
+            backToMain();
+        }
+
+        // 处理按钮点击（添加动画）
+        function handleButtonClick(button, callback) {
+            button.classList.add('clicking');
+            callback();
+            setTimeout(() => {
+                button.classList.remove('clicking');
+            }, 100);
+        }
+
+        // 处理同意按钮点击（切换条款 + 触发对应坑人效果）
+        function handleAgree() {
+            // ========== 关键修改2：第一个条款不触发坑人效果 ==========
+            if (currentTermIndex !== 0) {
+                // 非第一个条款，触发对应坑人效果
+                triggerCurrentPrankEffect();
+            }
+            
+            // 检查当前条款是否有特殊关卡
+            const currentLevel = currentLevelAssignments[currentTermIndex];
+            
+            if (currentLevel) {
+                // 对于需要在当前页面进行挑战的关卡（合成、经验、地鼠），先继续到下一个条款，然后在加载条款时触发关卡
+                if (currentLevel.type === 'experienceChallenge' || currentLevel.type === 'synthesizeChallenge' || currentLevel.type === 'whackAMoleChallenge') {
+                    proceedToNextLevel();
+                } else {
+                    // 对于需要换窗口进行挑战的关卡（如错窗），直接触发
+                    triggerLevelChallenge(currentLevel);
+                }
+            } else {
+                // 普通关卡，继续到下一个
+                proceedToNextLevel();
+            }
+        }
+        
+        // 触发关卡挑战
+        function triggerLevelChallenge(level) {
+            if (level.type === 'agreeChallenge') {
+                // 开始同意考验（错窗关卡）
+                startAgreeChallenge(level);
+            } else if (level.type === 'puzzleChallenge') {
+                // 开始华容道挑战
+                startPuzzleChallenge(level);
+            } else if (level.type === 'readChallenge') {
+                // 开始阅读挑战
+                startReadChallenge(level);
+            } else if (level.type === 'whackAMoleChallenge') {
+                // 开始打地鼠挑战
+                startWhackAMoleChallenge(level);
+            } else if (level.type === 'experienceChallenge') {
+                // 开始经验关卡挑战
+                startExperienceChallenge(level);
+            } else if (level.type === 'movementChallenge') {
+                // 开始移动关卡挑战
+                startMovementChallenge(level);
+            } else if (level.type === 'backChallenge') {
+                // 开始后面关卡挑战
+                startBackChallenge(level);
+            } else if (level.type === 'confirmChallenge') {
+                // 开始确认关卡挑战
+                startConfirmChallenge(level);
+            } else if (level.type === 'overlayChallenge') {
+                // 开始叠加关卡挑战
+                startOverlayChallenge(level);
+            }
+        }
+        
+        // 继续到下一个关卡
+        function proceedToNextLevel() {
+            // 重置所有坑人效果和关卡状态
+            resetPrankEffects();
+            
+            // 如果不是最后一个条款，切换到下一个
+            if (currentTermIndex < randomTerms.length - 1) {
+                currentTermIndex++;
+                loadCurrentTerm();
+                document.getElementById('termsContent').scrollTop = 0;
+            } else {
+                // 最后一个条款，完成通关
+                alert('恭喜您！您已同意所有勇者斗恶龙专属条款，真正的屠龙冒险正式开始！');
+                // 初始化关卡
+                assignRandomLevels();
+                backToMain();
+            }
+        }
+        
+        // 开始同意考验（错窗关卡）
+        function startAgreeChallenge(level) {
+            // 重置窗口索引
+            level.currentWindowIndex = 0;
+            
+            // 开始弹出第一个窗口
+            showNextChallengeWindow(level);
+        }
+        
+        // 显示下一个挑战窗口
+        function showNextChallengeWindow(level) {
+            if (level.currentWindowIndex < level.windowCount) {
+                // 创建新的窗口元素
+                const modal = document.createElement('div');
+                modal.className = 'terms-guide-modal active';
+                modal.style.zIndex = 1000 + level.currentWindowIndex;
+                
+                // 为窗口添加随机位置偏移，让玩家感觉很多窗口
+                const randomX = (Math.random() - 0.5) * 100;
+                const randomY = (Math.random() - 0.5) * 100;
+                modal.style.transform = `translate(${randomX}px, ${randomY}px)`;
+                
+                // 检查是否是第一个窗口（最底层的那个，被互换位置的窗口）
+                const isFirstWindow = (level.currentWindowIndex === 0);
+                
+                // 生成按钮HTML
+                let buttonsHTML = '';
+                if (isFirstWindow) {
+                    // 第一个窗口（最底层，被互换位置的窗口）：同意（红色底）在左边，不同意（绿色底）在右边
+                    buttonsHTML = `
+                        <div class="modal-footer">
+                            <button class="btn disagree-btn" onclick="handleChallengeAgree(${level.currentWindowIndex}, ${level.id || 1}, true)">同意</button>
+                            <button class="btn agree-btn" onclick="handleChallengeDisagree()">不同意</button>
+                        </div>
+                    `;
+                } else {
+                    // 普通窗口
+                    buttonsHTML = `
+                        <div class="modal-footer">
+                            <button class="btn disagree-btn" onclick="handleChallengeDisagree()">不同意</button>
+                            <button class="btn agree-btn" onclick="handleChallengeAgree(${level.currentWindowIndex}, ${level.id || 1}, false)">同意</button>
+                        </div>
+                    `;
+                }
+                
+                // Win7风格窗口结构
+                modal.innerHTML = `
+                    <div class="guide-modal-content">
+                        <!-- 窗口标题栏 -->
+                        <div class="modal-titlebar">
+                            <div class="modal-title">⚠️ 确认窗口</div>
+                            <div class="modal-buttons">
+                                <div class="modal-btn">_</div>
+                                <div class="modal-btn">□</div>
+                                <div class="modal-btn">×</div>
+                            </div>
+                        </div>
+                        <!-- 窗口内容区 -->
+                        <div class="modal-body">
+                            <div class="modal-content">您确定同意吗？</div>
+                        </div>
+                        <!-- 窗口底部按钮区 -->
+                        ${buttonsHTML}
+                    </div>
+                `;
+                
+                // 添加到body
+                document.body.appendChild(modal);
+                
+                // 继续显示下一个窗口，制造大量窗口的效果
+                if (level.currentWindowIndex < level.windowCount - 1) {
+                    // 不是最后一个窗口，增加索引并继续显示
+                    level.currentWindowIndex++;
+                    setTimeout(() => {
+                        showNextChallengeWindow(level);
+                    }, 100); // 快速连续显示窗口
+                } else {
+                    // 最后一个窗口，直接增加索引到总数
+                    level.currentWindowIndex = level.windowCount;
+                }
+            }
+        }
+        
+        // 处理挑战窗口的同意按钮
+        function handleChallengeAgree(windowIndex, levelId, isLastWindow) {
+            // 获取当前点击的按钮
+            const btn = event.target;
+            if (btn) {
+                // 添加点击特效
+                btn.classList.add('clicking');
+                setTimeout(() => {
+                    btn.classList.remove('clicking');
+                }, 200);
+            }
+            
+            // 移除当前点击的窗口
+            const modal = btn.closest('.terms-guide-modal');
+            if (modal) {
+                modal.remove();
+            }
+            
+            // 检查是否点击了最后一个窗口（最底层的那个，被互换位置的窗口）
+            if (isLastWindow) {
+                // 玩家成功通过所有窗口，继续到下一个条款
+                proceedToNextLevel();
+            }
+        }
+        
+        // 处理挑战窗口的不同意按钮
+        function handleChallengeDisagree() {
+            // 移除所有的挑战窗口，但保留引导弹窗
+            const modalWindows = document.querySelectorAll('.terms-guide-modal');
+            modalWindows.forEach(modal => {
+                // 只移除动态创建的挑战窗口，不移除引导弹窗
+                if (!modal.id || modal.id !== 'termsGuideModal') {
+                    modal.remove();
+                }
+            });
+            
+            // 显示不同意提示弹窗
+            document.getElementById('disagreeModal').classList.remove('hidden');
+        }
+        
+        // 开始华容道挑战
+        function startPuzzleChallenge(level) {
+            // 这里可以添加华容道挑战的代码
+            proceedToNextLevel();
+        }
+        
+        // 开始阅读挑战
+        function startReadChallenge(level) {
+            // 重置关卡状态
+            level.phase = 0;
+            
+            // 获取条款内容元素和按钮
+            const termsContent = document.getElementById('termsContent');
+            const bottomButtons = document.getElementById('bottomButtons');
+            
+            // 保存原始尺寸
+            const originalWidth = termsContent.offsetWidth;
+            const originalHeight = termsContent.offsetHeight;
+            
+            // 获取容器外按钮
+            const outerAgreeBtn = bottomButtons.querySelector('.agree-btn');
+            const outerDisagreeBtn = bottomButtons.querySelector('.disagree-btn');
+            
+            // 保存原始按钮状态
+            const originalAgreeText = outerAgreeBtn.textContent;
+            const originalDisagreeText = outerDisagreeBtn.textContent;
+            
+            // 容器内按钮
+            let innerButtons = null;
+            
+            // 创建贴近按钮的对话框
+            function createButtonDialog(btn, text) {
+                // 移除之前的对话框
+                const existingDialog = document.getElementById('buttonDialog');
+                if (existingDialog) {
+                    existingDialog.remove();
+                }
+                
+                // 创建新对话框
+                const dialog = document.createElement('div');
+                dialog.id = 'buttonDialog';
+                dialog.style.cssText = `
+                    position: absolute;
+                    background-color: #fff;
+                    border: 2px solid #333;
+                    border-radius: 5px;
+                    padding: 10px;
+                    font-size: 14px;
+                    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+                    z-index: 1000;
+                    max-width: 200px;
+                    opacity: 0;
+                    transition: opacity 0.5s ease;
+                `;
+                dialog.textContent = text;
+                
+                // 计算按钮位置
+                const rect = btn.getBoundingClientRect();
+                const container = btn.closest('.terms-buttons-container') || btn.closest('#innerButtonsContainer');
+                const containerRect = container.getBoundingClientRect();
+                
+                dialog.style.top = (rect.top - containerRect.top - 60) + 'px';
+                dialog.style.left = (rect.left - containerRect.left) + 'px';
+                
+                // 添加到按钮容器
+                container.style.position = 'relative';
+                container.appendChild(dialog);
+                
+                // 淡入
+                setTimeout(() => {
+                    dialog.style.opacity = '1';
+                }, 100);
+                
+                // 2秒后自动消失
+                setTimeout(() => {
+                    dialog.style.opacity = '0';
+                    setTimeout(() => {
+                        dialog.remove();
+                    }, 500);
+                }, 2000);
+                
+                return dialog;
+            }
+            
+            // 缩小内容容器
+            function shrinkContentContainer(container, targetPercentage) {
+                // 获取当前容器尺寸作为起始点
+                const currentWidth = container.offsetWidth;
+                const currentHeight = container.offsetHeight;
+                
+                // 计算目标尺寸
+                const targetWidth = originalWidth * (targetPercentage / 100);
+                const targetHeight = originalHeight * (targetPercentage / 100);
+                
+                const duration = 1000; // 动画持续时间（毫秒）
+                const startTime = performance.now();
+                
+                function animate(currentTime) {
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    
+                    // 线性插值
+                    const width = currentWidth + (targetWidth - currentWidth) * progress;
+                    const height = currentHeight + (targetHeight - currentHeight) * progress;
+                    
+                    // 更新尺寸（同时缩小宽度和长度）
+                    container.style.width = width + 'px';
+                    container.style.height = height + 'px';
+                    container.style.overflowY = 'auto';
+                    container.style.backgroundColor = '#fff3e0'; // 改变背景色以误导
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(animate);
+                    }
+                }
+                
+                requestAnimationFrame(animate);
+                container.style.overflowY = 'auto';
+            }
+            
+            // 交换按钮底色和功能
+            function swapButtonStyles(btn1, btn2) {
+                // 交换类名
+                const tempClass = btn1.className;
+                btn1.className = btn2.className;
+                btn2.className = tempClass;
+                
+                // 交换文本
+                const tempText = btn1.textContent;
+                btn1.textContent = btn2.textContent;
+                btn2.textContent = tempText;
+                
+                // 重新绑定事件
+                rebindEvents();
+            }
+            
+            // 交换按钮位置
+            function swapButtonPositions(btn1, btn2) {
+                // 交换位置
+                if (btn1.nextSibling === btn2) {
+                    bottomButtons.insertBefore(btn2, btn1);
+                } else if (btn2.nextSibling === btn1) {
+                    bottomButtons.insertBefore(btn1, btn2);
+                }
+                
+                // 重新绑定事件
+                rebindEvents();
+            }
+            
+            // 创建容器内按钮
+            function createInnerButtons() {
+                const innerButtonsContainer = document.createElement('div');
+                innerButtonsContainer.id = 'innerButtonsContainer';
+                innerButtonsContainer.style.cssText = `
+                    margin-top: 20px;
+                    padding: 15px;
+                    background-color: #f0f0f0;
+                    border: 1px solid #ccc;
+                    border-radius: 5px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 10px;
+                `;
+                
+                innerButtonsContainer.innerHTML = `
+                    <button class="btn agree-btn" style="width: 80px; padding: 5px 10px; font-size: 12px;">同意</button>
+                    <button class="btn disagree-btn" style="width: 80px; padding: 5px 10px; font-size: 12px;">不同意</button>
+                `;
+                
+                termsContent.appendChild(innerButtonsContainer);
+                
+                // 获取容器内按钮
+                const innerAgreeBtn = innerButtonsContainer.querySelector('.agree-btn');
+                const innerDisagreeBtn = innerButtonsContainer.querySelector('.disagree-btn');
+                
+                return { innerAgreeBtn, innerDisagreeBtn, innerButtonsContainer };
+            }
+            
+            // 重新绑定所有事件
+            function rebindEvents() {
+                // 绑定容器外按钮事件
+                if (level.phase === 3) {
+                    // 第四阶段：容器外的绿底同意按钮绑定到 handlePhase3AgreeClick
+                    outerAgreeBtn.onclick = function(e) {
+                        handlePhase3AgreeClick(this);
+                    };
+                } else if (level.phase === 4) {
+                    // 最终阶段：绑定最终阶段的事件处理
+                    outerAgreeBtn.onclick = function(e) {
+                        // 最终阶段：点击换过底色的红底同意按钮通过关卡
+                        cleanupReadChallenge();
+                        proceedToNextLevel();
+                    };
+                    
+                    outerDisagreeBtn.onclick = function(e) {
+                        // 最终阶段：点击换过底色的绿底不同意按钮游戏失败
+                        cleanupReadChallenge();
+                        handleDisagree();
+                    };
+                } else {
+                    // 其他阶段：绑定到 handleOuterAgreeClick
+                    outerAgreeBtn.onclick = function(e) {
+                        handleOuterAgreeClick(this);
+                    };
+                }
+                
+                if (level.phase !== 4) {
+                    outerDisagreeBtn.onclick = function(e) {
+                        handleOuterDisagreeClick(this);
+                    };
+                }
+                
+                // 绑定容器内按钮事件（如果存在）
+                if (innerButtons) {
+                    innerButtons.innerAgreeBtn.onclick = function(e) {
+                        handleInnerAgreeClick(this);
+                    };
+                    
+                    innerButtons.innerDisagreeBtn.onclick = function(e) {
+                        handleInnerDisagreeClick(this);
+                    };
+                }
+            }
+            
+            // 处理容器外同意按钮点击
+            function handleOuterAgreeClick(btn) {
+                if (level.phase === 0) {
+                    // 第一阶段：弹出对话框，缩小容器，显示容器内按钮
+                    createButtonDialog(btn, '请认真看完条款');
+                    
+                    // 立即开始缩小容器至25%
+                    shrinkContentContainer(termsContent, 25);
+                    
+                    // 滚动到顶部
+                    termsContent.scrollTop = 0;
+                    
+                    // 创建容器内按钮
+                    innerButtons = createInnerButtons();
+                    
+                    // 进入第二阶段
+                    level.phase = 1;
+                    
+                    // 重新绑定事件
+                    rebindEvents();
+                } else if (level.phase === 1) {
+                    // 第二阶段：点击容器外的同意按钮，弹出与第一阶段相同的提示
+                    createButtonDialog(btn, '请认真看完条款');
+                } else if (level.phase === 2) {
+                    // 第三阶段：点击容器外同意按钮，交换位置，缩小容器
+                    createButtonDialog(btn, '别点了，越点越小。-_-');
+                    
+                    // 交换容器外按钮位置
+                    swapButtonPositions(outerAgreeBtn, outerDisagreeBtn);
+                    
+                    // 从25%开始缩小容器至15%
+                    shrinkContentContainer(termsContent, 15);
+                    
+                    // 滚动到顶部
+                    termsContent.scrollTop = 0;
+                    
+                    // 进入第四阶段
+                    level.phase = 3;
+                    
+                    // 重新绑定事件，确保第四阶段的点击能够正确触发
+                    rebindEvents();
+                } else if (level.phase === 4) {
+                    // 最终阶段：点击换过底色的红底同意按钮通过关卡
+                    cleanupReadChallenge();
+                    proceedToNextLevel();
+                }
+            }
+            
+            // 处理容器外不同意按钮点击
+            function handleOuterDisagreeClick(btn) {
+                if (level.phase >= 1) {
+                    // 第一阶段后点击容器外不同意按钮直接失败
+                    cleanupReadChallenge();
+                    handleDisagree();
+                } else {
+                    // 初始状态点击不同意按钮也失败
+                    cleanupReadChallenge();
+                    handleDisagree();
+                }
+            }
+            
+            // 处理容器内同意按钮点击
+            function handleInnerAgreeClick(btn) {
+                if (level.phase === 1) {
+                    // 第二阶段：点击容器内同意按钮，弹出对话框
+                    createButtonDialog(btn, '哦吼，真的看完了？');
+                    
+                    // 进入第三阶段
+                    level.phase = 2;
+                }
+            }
+            
+            // 处理容器内不同意按钮点击
+            function handleInnerDisagreeClick(btn) {
+                // 第二阶段：点击容器内的不同意按钮游戏失败
+                cleanupReadChallenge();
+                handleDisagree();
+            }
+            
+            // 处理第四阶段的绿底同意键点击
+            function handlePhase3AgreeClick(btn) {
+                if (level.phase === 3) {
+                    // 第四阶段：点击换过位置的绿底同意按钮，互换底色，弹出对话框
+                    createButtonDialog(btn, '好吧，我就是过关键，再点一下吧');
+                    
+                    // 互换容器外按钮底色
+                    swapButtonStyles(outerAgreeBtn, outerDisagreeBtn);
+                    
+                    // 进入最终阶段
+                    level.phase = 4;
+                    
+                    // 互换按钮文字
+                    const tempText = outerAgreeBtn.textContent;
+                    outerAgreeBtn.textContent = outerDisagreeBtn.textContent;
+                    outerDisagreeBtn.textContent = tempText;
+                    
+                    // 重新绑定事件，处理最终阶段的点击
+                    outerAgreeBtn.onclick = function(e) {
+                        // 最终阶段：点击换过底色的红底同意按钮通过关卡
+                        cleanupReadChallenge();
+                        proceedToNextLevel();
+                    };
+                    
+                    outerDisagreeBtn.onclick = function(e) {
+                        // 最终阶段：点击换过底色的绿底不同意按钮游戏失败
+                        cleanupReadChallenge();
+                        handleDisagree();
+                    };
+                }
+            }
+            
+            // 初始绑定事件
+            rebindEvents();
+        }
+        
+        // 清理阅读挑战元素
+        function cleanupReadChallenge() {
+            // 移除对话框
+            const dialogBox = document.getElementById('buttonDialog');
+            if (dialogBox) {
+                dialogBox.remove();
+            }
+            
+            // 移除容器内按钮
+            const innerButtonsContainer = document.getElementById('innerButtonsContainer');
+            if (innerButtonsContainer) {
+                innerButtonsContainer.remove();
+            }
+            
+            // 恢复条款内容样式
+            const termsContent = document.getElementById('termsContent');
+            if (termsContent) {
+                // 完全重置样式，确保容器恢复到原始大小
+                termsContent.style.width = '';
+                termsContent.style.height = '';
+                termsContent.style.overflowY = '';
+                termsContent.style.backgroundColor = '';
+                termsContent.style.cssText = '';
+                // 强制移除可能影响大小的类
+                termsContent.classList.remove('small-height');
+            }
+            
+            // 恢复底部按钮
+            const bottomButtons = document.getElementById('bottomButtons');
+            if (bottomButtons) {
+                bottomButtons.classList.remove('hide-buttons');
+                bottomButtons.style.position = '';
+                bottomButtons.style.cssText = '';
+                
+                // 恢复按钮原始状态
+                const agreeBtn = bottomButtons.querySelector('.agree-btn');
+                const disagreeBtn = bottomButtons.querySelector('.disagree-btn');
+                if (agreeBtn && disagreeBtn) {
+                    // 恢复按钮类名
+                    agreeBtn.className = 'btn agree-btn';
+                    disagreeBtn.className = 'btn disagree-btn';
+                    
+                    // 恢复按钮文字
+                    agreeBtn.textContent = '同意';
+                    disagreeBtn.textContent = '不同意';
+                    
+                    // 恢复按钮位置（确保不同意按钮在左侧，同意按钮在右侧）
+                    if (agreeBtn.nextSibling === disagreeBtn) {
+                        bottomButtons.insertBefore(disagreeBtn, agreeBtn);
+                    }
+                    // 确保按钮顺序正确
+                    if (disagreeBtn.nextSibling !== agreeBtn) {
+                        bottomButtons.innerHTML = '';
+                        bottomButtons.appendChild(disagreeBtn);
+                        bottomButtons.appendChild(agreeBtn);
+                        // 重新恢复类名和文字
+                        disagreeBtn.className = 'btn disagree-btn';
+                        agreeBtn.className = 'btn agree-btn';
+                        disagreeBtn.textContent = '不同意';
+                        agreeBtn.textContent = '同意';
+                    }
+                    
+                    // 恢复默认事件
+                    agreeBtn.onclick = function(e) {
+                        handleButtonClick(this, handleAgree);
+                    };
+                    
+                    disagreeBtn.onclick = function(e) {
+                        handleButtonClick(this, handleDisagree);
+                    };
+                }
+            }
+        }
+        
+        // 开始打地鼠挑战
+        function startWhackAMoleChallenge(level) {
+            // 重置关卡状态
+            level.score = 0;
+            level.activeButtons = [];
+            
+            // 获取条款内容元素
+            const termsContent = document.getElementById('termsContent');
+            const bottomButtons = document.getElementById('bottomButtons');
+            
+            // 保存原始状态
+            const originalContentStyle = termsContent.style.cssText;
+            const originalButtonsStyle = bottomButtons.style.cssText;
+            
+            // 隐藏底部按钮
+            bottomButtons.classList.add('hide-buttons');
+            
+            // 创建游戏容器
+            const gameContainer = document.createElement('div');
+            gameContainer.id = 'whackAMoleGame';
+            gameContainer.style.cssText = `
+                display: flex;
+                flex-direction: column;
+                width: 100%;
+                height: 400px;
+                padding: 20px;
+                box-sizing: border-box;
+                background-color: #f0f0f0;
+                border: 2px solid #828282;
+                border-radius: 5px;
+            `;
+            
+            // 创建游戏内容区域（包含分数条和游戏网格）
+            const gameContent = document.createElement('div');
+            gameContent.style.cssText = `
+                display: flex;
+                flex: 1;
+            `;
+            
+            // 创建分数条
+            const scoreBar = document.createElement('div');
+            scoreBar.id = 'scoreBar';
+            scoreBar.style.cssText = `
+                width: 80px;
+                margin-right: 20px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                background-color: #fff;
+                border: 1px solid #828282;
+                border-radius: 5px;
+                padding: 15px;
+            `;
+            
+            // 分数标题
+            const scoreTitle = document.createElement('div');
+            scoreTitle.textContent = '分数';
+            scoreTitle.style.cssText = `
+                font-weight: bold;
+                margin-bottom: 10px;
+                font-size: 16px;
+            `;
+            scoreBar.appendChild(scoreTitle);
+            
+            // 分数显示
+            const scoreDisplay = document.createElement('div');
+            scoreDisplay.id = 'scoreDisplay';
+            scoreDisplay.textContent = `0 / ${level.targetScore}`;
+            scoreDisplay.style.cssText = `
+                font-size: 24px;
+                font-weight: bold;
+                margin-bottom: 20px;
+                color: #10B981;
+            `;
+            scoreBar.appendChild(scoreDisplay);
+            
+            // 分数条
+            const scoreProgress = document.createElement('div');
+            scoreProgress.id = 'scoreProgress';
+            scoreProgress.style.cssText = `
+                width: 100%;
+                height: 200px;
+                background-color: #e0e0e0;
+                border-radius: 5px;
+                position: relative;
+                overflow: hidden;
+            `;
+            
+            // 分数填充
+            const scoreFill = document.createElement('div');
+            scoreFill.id = 'scoreFill';
+            scoreFill.style.cssText = `
+                position: absolute;
+                bottom: 0;
+                width: 100%;
+                height: 0%;
+                background-color: #10B981;
+                transition: height 0.3s ease;
+            `;
+            scoreProgress.appendChild(scoreFill);
+            scoreBar.appendChild(scoreProgress);
+            
+            // 目标分数提示
+            const targetHint = document.createElement('div');
+            targetHint.textContent = `目标: ${level.targetScore}分`;
+            targetHint.style.cssText = `
+                margin-top: 10px;
+                font-size: 12px;
+                color: #666;
+            `;
+            scoreBar.appendChild(targetHint);
+            
+            // 创建游戏网格
+            const gameGrid = document.createElement('div');
+            gameGrid.id = 'gameGrid';
+            gameGrid.style.cssText = `
+                flex: 1;
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                grid-template-rows: repeat(4, 1fr);
+                gap: 15px;
+                background-color: #fff;
+                border: 1px solid #828282;
+                border-radius: 5px;
+                padding: 20px;
+            `;
+            
+            // 将分数条和游戏网格添加到游戏内容区域
+            gameContent.appendChild(scoreBar);
+            gameContent.appendChild(gameGrid);
+            
+            // 填充网格格子
+            for (let i = 0; i < 4; i++) {
+                for (let j = 0; j < 3; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'gameCell';
+                    cell.dataset.row = i;
+                    cell.dataset.col = j;
+                    cell.style.cssText = `
+                        position: relative;
+                        background-color: #e8e8e8;
+                        border: 1px solid #ccc;
+                        border-radius: 5px;
+                        overflow: hidden;
+                    `;
+                    gameGrid.appendChild(cell);
+                }
+            }
+            
+            // 创建倒计时显示
+            const countdownDisplay = document.createElement('div');
+            countdownDisplay.id = 'countdownDisplay';
+            countdownDisplay.textContent = '请在 10 秒内完成';
+            countdownDisplay.style.cssText = `
+                font-size: 18px;
+                font-weight: bold;
+                margin-top: 15px;
+                color: #333;
+                text-align: center;
+            `;
+            
+            // 组装游戏容器
+            gameContainer.appendChild(gameContent);
+            gameContainer.appendChild(countdownDisplay);
+            
+            // 清空条款内容并添加游戏容器
+            termsContent.innerHTML = '';
+            termsContent.appendChild(gameContainer);
+            
+            // 动画计时器
+            let gameInterval;
+            // 倒计时计时器
+            let countdownInterval;
+            // 倒计时时间（秒）
+            let timeLeft = 10;
+            // 倒计时速度（毫秒）
+            let countdownSpeed = 1000;
+            
+            // 开始倒计时
+            function startCountdown() {
+                countdownInterval = setInterval(() => {
+                    if (timeLeft > 1) {
+                        // 大于1秒时，正常倒计时
+                        timeLeft -= 1;
+                        countdownSpeed = 1000;
+                    } else if (timeLeft > 0) {
+                        // 小于等于1秒时，每次减少一半时间
+                        timeLeft /= 2;
+                        countdownSpeed = 500;
+                    } else {
+                        // 时间到，游戏失败
+                        clearInterval(countdownInterval);
+                        handleGameOver(false);
+                        return;
+                    }
+                    
+                    // 更新倒计时显示
+                    countdownDisplay.textContent = `请在 ${timeLeft.toFixed(3)} 秒内完成`;
+                }, countdownSpeed);
+            }
+            
+            // 更新分数
+            function updateScore(points) {
+                level.score += points;
+                
+                // 限制分数范围
+                if (level.score < level.minScore) {
+                    level.score = level.minScore;
+                    handleGameOver(false);
+                    return;
+                }
+                
+                if (level.score >= level.targetScore) {
+                    level.score = level.targetScore;
+                    showSuccessModal();
+                    return;
+                }
+                
+                // 更新分数显示
+                scoreDisplay.textContent = `${level.score} / ${level.targetScore}`;
+                
+                // 更新分数条
+                const progress = (level.score - level.minScore) / (level.targetScore - level.minScore) * 100;
+                scoreFill.style.height = `${Math.max(0, Math.min(100, progress))}%`;
+                
+                // 更新分数颜色
+                if (level.score < 0) {
+                    scoreDisplay.style.color = '#EF4444';
+                    scoreFill.style.backgroundColor = '#EF4444';
+                } else if (level.score >= level.targetScore) {
+                    scoreDisplay.style.color = '#10B981';
+                    scoreFill.style.backgroundColor = '#10B981';
+                } else {
+                    scoreDisplay.style.color = '#F59E0B';
+                    scoreFill.style.backgroundColor = '#F59E0B';
+                }
+            }
+            
+            // 显示成功提示窗口
+            function showSuccessModal() {
+                // 停止游戏
+                clearInterval(gameInterval);
+                // 停止倒计时
+                if (countdownInterval) {
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                }
+                
+                // 移除所有按钮
+                level.activeButtons.forEach(button => {
+                    if (button.parentNode) {
+                        button.parentNode.removeChild(button);
+                    }
+                });
+                level.activeButtons = [];
+                
+                // 创建提示窗口
+                const modal = document.createElement('div');
+                modal.className = 'terms-guide-modal active';
+                modal.style.zIndex = 1000;
+                
+                // Win7风格窗口结构
+                modal.innerHTML = `
+                    <div class="guide-modal-content">
+                        <!-- 窗口标题栏 -->
+                        <div class="modal-titlebar">
+                            <div class="modal-title">🎉 挑战完成</div>
+                            <div class="modal-buttons">
+                                <div class="modal-btn">_</div>
+                                <div class="modal-btn">□</div>
+                                <div class="modal-btn">×</div>
+                            </div>
+                        </div>
+                        <!-- 窗口内容区 -->
+                        <div class="modal-body">
+                            <div class="modal-content">你完成了条款的同意</div>
+                        </div>
+                        <!-- 窗口底部按钮区 -->
+                        <div class="modal-footer">
+                            <button class="btn agree-btn" onclick="closeSuccessModal()">好的</button>
+                        </div>
+                    </div>
+                `;
+                
+                // 添加到body
+                document.body.appendChild(modal);
+                
+                // 保存modal引用
+                window.successModal = modal;
+            }
+            
+            // 关闭成功提示窗口
+            window.closeSuccessModal = function() {
+                if (window.successModal) {
+                    window.successModal.remove();
+                    window.successModal = null;
+                }
+                
+                // 清理游戏容器
+                cleanupWhackAMoleChallenge();
+                
+                // 继续到下一个关卡
+                proceedToNextLevel();
+            };
+            
+            // 生成随机按钮
+            function generateButton() {
+                // 检查当前按钮数量是否已达上限
+                if (level.activeButtons.length >= 8) {
+                    return;
+                }
+                
+                // 随机选择一个格子
+                const cells = document.querySelectorAll('.gameCell');
+                const randomCell = cells[Math.floor(Math.random() * cells.length)];
+                
+                // 检查格子是否已有按钮
+                if (randomCell.querySelector('button')) {
+                    generateButton();
+                    return;
+                }
+                
+                // 随机选择按钮类型
+                const randomType = level.buttonTypes[Math.floor(Math.random() * level.buttonTypes.length)];
+                
+                // 创建按钮
+                const button = document.createElement('button');
+                button.className = `btn ${randomType.class}`;
+                button.textContent = randomType.text;
+                button.dataset.type = randomType.type;
+                button.dataset.points = randomType.points;
+                button.style.cssText = `
+                    position: absolute;
+                    bottom: -100%;
+                    left: 10%;
+                    width: 80%;
+                    padding: 10px;
+                    font-size: 14px;
+                    border: none;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    transition: bottom 0.1s ease;
+                    pointer-events: none;
+                    user-select: none;
+                    -webkit-user-select: none;
+                    margin: 0;
+                `;
+                
+                // 添加点击事件
+                button.onclick = function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const points = parseInt(this.dataset.points);
+                    updateScore(points);
+                    removeButton(button);
+                };
+                
+                // 添加到格子
+                randomCell.appendChild(button);
+                level.activeButtons.push(button);
+                
+                // 滑入动画
+                setTimeout(() => {
+                    button.style.bottom = '10%';
+                    // 动画完成后启用交互
+                    setTimeout(() => {
+                        button.style.pointerEvents = 'auto';
+                    }, 100);
+                }, 10);
+                
+                // 一段时间后滑出
+                setTimeout(() => {
+                    if (button.parentNode) {
+                        // 禁用交互
+                        button.style.pointerEvents = 'none';
+                        button.style.bottom = '-100%';
+                        setTimeout(() => {
+                            if (button.parentNode) {
+                                button.parentNode.removeChild(button);
+                                level.activeButtons = level.activeButtons.filter(btn => btn !== button);
+                            }
+                        }, 100);
+                    }
+                }, 800);
+            }
+            
+            // 移除按钮
+            function removeButton(button) {
+                if (button.parentNode) {
+                    // 禁用交互
+                    button.style.pointerEvents = 'none';
+                    button.style.bottom = '-100%';
+                    setTimeout(() => {
+                        if (button.parentNode) {
+                            button.parentNode.removeChild(button);
+                            level.activeButtons = level.activeButtons.filter(btn => btn !== button);
+                        }
+                    }, 100);
+                }
+            }
+            
+            // 游戏结束处理
+            function handleGameOver(isWin) {
+                // 停止游戏
+                clearInterval(gameInterval);
+                // 停止倒计时
+                if (countdownInterval) {
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                }
+                
+                // 移除所有按钮
+                level.activeButtons.forEach(button => {
+                    if (button.parentNode) {
+                        button.parentNode.removeChild(button);
+                    }
+                });
+                level.activeButtons = [];
+                
+                // 清理游戏容器
+                cleanupWhackAMoleChallenge();
+                
+                if (!isWin) {
+                    // 游戏失败
+                    handleDisagree();
+                }
+            }
+            
+            // 清理打地鼠关卡
+            function cleanupWhackAMoleChallenge() {
+                // 停止游戏
+                if (gameInterval) {
+                    clearInterval(gameInterval);
+                    gameInterval = null;
+                }
+                
+                // 移除所有按钮
+                if (level.activeButtons) {
+                    level.activeButtons.forEach(button => {
+                        if (button && button.parentNode) {
+                            try {
+                                button.parentNode.removeChild(button);
+                            } catch (e) {
+                                console.log('Error removing button:', e);
+                            }
+                        }
+                    });
+                    level.activeButtons = [];
+                }
+                
+                // 移除游戏容器
+                const gameContainerEl = document.getElementById('whackAMoleGame');
+                if (gameContainerEl) {
+                    try {
+                        gameContainerEl.remove();
+                    } catch (e) {
+                        console.log('Error removing game container:', e);
+                    }
+                }
+                
+                // 移除成功提示窗口
+                if (window.successModal) {
+                    try {
+                        window.successModal.remove();
+                        window.successModal = null;
+                    } catch (e) {
+                        console.log('Error removing success modal:', e);
+                    }
+                }
+                
+                // 恢复条款内容样式
+                const termsContent = document.getElementById('termsContent');
+                if (termsContent) {
+                    try {
+                        // 完全重置样式
+                        termsContent.style.width = '';
+                        termsContent.style.height = '';
+                        termsContent.style.overflowY = '';
+                        termsContent.style.backgroundColor = '';
+                        termsContent.style.cssText = '';
+                    } catch (e) {
+                        console.log('Error resetting terms content:', e);
+                    }
+                }
+                
+                // 恢复底部按钮
+                const bottomButtons = document.getElementById('bottomButtons');
+                if (bottomButtons) {
+                    try {
+                        bottomButtons.classList.remove('hide-buttons');
+                        bottomButtons.style.cssText = '';
+                        
+                        // 恢复按钮原始状态
+                        const agreeBtn = bottomButtons.querySelector('.agree-btn');
+                        const disagreeBtn = bottomButtons.querySelector('.disagree-btn');
+                        if (agreeBtn && disagreeBtn) {
+                            // 恢复按钮类名
+                            agreeBtn.className = 'btn agree-btn';
+                            disagreeBtn.className = 'btn disagree-btn';
+                            
+                            // 恢复按钮文字
+                            agreeBtn.textContent = '同意';
+                            disagreeBtn.textContent = '不同意';
+                            
+                            // 恢复按钮位置（确保不同意按钮在左侧，同意按钮在右侧）
+                            if (agreeBtn.nextSibling === disagreeBtn) {
+                                bottomButtons.insertBefore(disagreeBtn, agreeBtn);
+                            }
+                            
+                            // 恢复默认事件
+                            agreeBtn.onclick = function(e) {
+                                handleButtonClick(this, handleAgree);
+                            };
+                            
+                            disagreeBtn.onclick = function(e) {
+                                handleButtonClick(this, handleDisagree);
+                            };
+                        }
+                    } catch (e) {
+                        console.log('Error resetting bottom buttons:', e);
+                    }
+                }
+                
+                // 移除全局变量
+                if (window.closeSuccessModal) {
+                    try {
+                        delete window.closeSuccessModal;
+                    } catch (e) {
+                        console.log('Error deleting global variable:', e);
+                    }
+                }
+                
+                // 确保所有全局状态被清理
+                try {
+                    // 清理任何可能的残留状态
+                    if (window.successModal) {
+                        delete window.successModal;
+                    }
+                } catch (e) {
+                    console.log('Error cleaning up global state:', e);
+                }
+            }
+            
+            // 开始游戏
+            gameInterval = setInterval(generateButton, 300);
+            // 开始倒计时
+            startCountdown();
+            
+            // 初始生成几个按钮
+            setTimeout(() => {
+                for (let i = 0; i < 6; i++) {
+                    generateButton();
+                }
+            }, 100);
+        }
+
+        // 开始经验关卡挑战
+        function startExperienceChallenge(level) {
+            // 重置关卡状态
+            level.score = 0;
+            level.consecutiveClicks = 0;
+            level.buttonPositions = ["disagree", "agree"];
+            level.lastMilestone = 0;
+            // 确保visualMilestones存在
+            if (!level.visualMilestones) {
+                level.visualMilestones = [50, 110, 140];
+            }
+            
+            // 获取条款内容元素
+            const termsContent = document.getElementById('termsContent');
+            const bottomButtons = document.getElementById('bottomButtons');
+            
+            // 隐藏底部按钮
+            bottomButtons.classList.add('hide-buttons');
+            
+            // 创建游戏容器
+            const gameContainer = document.createElement('div');
+            gameContainer.id = 'experienceGame';
+            gameContainer.style.cssText = `
+                width: 100%;
+                height: 400px;
+                padding: 20px;
+                box-sizing: border-box;
+                background-color: #f0f0f0;
+                border: 2px solid #828282;
+                border-radius: 5px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+            `;
+            
+            // 创建标题
+            const title = document.createElement('div');
+            title.textContent = '经验积累挑战';
+            title.style.cssText = `
+                font-size: 24px;
+                font-weight: bold;
+                margin-bottom: 30px;
+                color: #0078D7;
+            `;
+            gameContainer.appendChild(title);
+            
+            // 创建进度条容器
+            const progressContainer = document.createElement('div');
+            progressContainer.id = 'progressContainer';
+            progressContainer.style.cssText = `
+                width: 95%;
+                height: 40px;
+                background-color: #e0e0e0;
+                border-radius: 20px;
+                position: relative;
+                margin-bottom: 40px;
+                overflow: hidden;
+            `;
+            
+            // 创建进度条
+            const progressBar = document.createElement('div');
+            progressBar.id = 'progressBar';
+            progressBar.style.cssText = `
+                width: 0%;
+                height: 100%;
+                background: linear-gradient(to right, #34D399 0%, #10B981 100%);
+                border-radius: 20px;
+                transition: width 0.3s ease;
+                position: relative;
+                z-index: 1;
+            `;
+            progressContainer.appendChild(progressBar);
+            
+            // 创建里程碑标记（使用视觉位置来误导玩家）
+            level.visualMilestones.forEach((visualMilestone, index) => {
+                const actualMilestone = level.milestones[index];
+                const marker = document.createElement('div');
+                marker.style.cssText = `
+                    position: absolute;
+                    top: 0;
+                    bottom: 0;
+                    width: 2px;
+                    background-color: #F59E0B;
+                    left: ${(visualMilestone / level.targetScore) * 100}%;
+                    z-index: 2;
+                `;
+                progressContainer.appendChild(marker);
+                
+                // 添加里程碑标签
+                const label = document.createElement('div');
+                label.textContent = actualMilestone;
+                label.style.cssText = `
+                    position: absolute;
+                    top: -25px;
+                    left: ${(visualMilestone / level.targetScore) * 100}%;
+                    transform: translateX(-50%);
+                    font-size: 12px;
+                    font-weight: bold;
+                    color: #F59E0B;
+                    z-index: 3;
+                `;
+                progressContainer.appendChild(label);
+            });
+            
+            gameContainer.appendChild(progressContainer);
+            
+            // 创建分数显示
+            const scoreDisplay = document.createElement('div');
+            scoreDisplay.id = 'scoreDisplay';
+            scoreDisplay.textContent = `经验值: ${level.score} / ${level.targetScore}`;
+            scoreDisplay.style.cssText = `
+                font-size: 20px;
+                font-weight: bold;
+                margin-bottom: 20px;
+                color: #333;
+            `;
+            gameContainer.appendChild(scoreDisplay);
+            
+            // 创建连击倍数显示
+            const multiplierDisplay = document.createElement('div');
+            multiplierDisplay.id = 'multiplierDisplay';
+            multiplierDisplay.textContent = '连击倍数: x1';
+            multiplierDisplay.style.cssText = `
+                font-size: 16px;
+                color: #666;
+                margin-bottom: 30px;
+            `;
+            gameContainer.appendChild(multiplierDisplay);
+            
+            // 创建按钮容器
+            const buttonContainer = document.createElement('div');
+            buttonContainer.id = 'experienceButtons';
+            buttonContainer.style.cssText = `
+                display: flex;
+                gap: 20px;
+            `;
+            
+            // 创建不同意按钮
+            const disagreeBtn = document.createElement('button');
+            disagreeBtn.className = 'btn disagree-btn';
+            disagreeBtn.textContent = '不同意';
+            disagreeBtn.onclick = function() {
+                // 点击不同意按钮，游戏失败
+                cleanupExperienceChallenge();
+                handleDisagree();
+                playSound('disagree');
+            };
+            
+            // 创建同意按钮
+            const agreeBtn = document.createElement('button');
+            agreeBtn.className = 'btn agree-btn';
+            agreeBtn.textContent = '同意';
+            agreeBtn.onclick = function() {
+                // 增加连击数
+                level.consecutiveClicks++;
+                
+                // 计算倍数（最大5倍）
+                const multiplier = Math.min(Math.floor(level.consecutiveClicks / 5) + 1, level.maxMultiplier);
+                
+                // 计算得分
+                const points = multiplier;
+                level.score += points;
+                
+                // 检查是否达到目标分数
+                if (level.score >= level.targetScore) {
+                    level.score = level.targetScore;
+                    showExperienceVictory();
+                    return;
+                }
+                
+                // 检查是否达到里程碑
+                checkMilestones();
+                
+                // 更新UI
+                updateProgressBar();
+                updateScoreDisplay();
+                updateMultiplierDisplay();
+                
+                // 播放音效
+                playSound('agree');
+            };
+            
+            // 添加按钮到容器
+            buttonContainer.appendChild(disagreeBtn);
+            buttonContainer.appendChild(agreeBtn);
+            gameContainer.appendChild(buttonContainer);
+            
+            // 清空条款内容并添加游戏容器
+            termsContent.innerHTML = '';
+            termsContent.appendChild(gameContainer);
+            
+            // 更新进度条
+            function updateProgressBar() {
+                const percentage = (level.score / level.targetScore) * 100;
+                progressBar.style.width = `${percentage}%`;
+            }
+            
+            // 更新分数显示
+            function updateScoreDisplay() {
+                scoreDisplay.textContent = `经验值: ${level.score} / ${level.targetScore}`;
+            }
+            
+            // 更新连击倍数显示
+            function updateMultiplierDisplay() {
+                const multiplier = Math.min(Math.floor(level.consecutiveClicks / 5) + 1, level.maxMultiplier);
+                multiplierDisplay.textContent = `连击倍数: x${multiplier}`;
+            }
+            
+            // 检查里程碑
+            function checkMilestones() {
+                for (let i = level.lastMilestone; i < level.milestones.length; i++) {
+                    if (level.score >= level.milestones[i]) {
+                        // 检查是否是最后一个里程碑
+                        const isLastMilestone = (i === level.milestones.length - 1);
+                        // 达到里程碑，交换按钮位置
+                        swapButtonPositions(isLastMilestone);
+                        level.lastMilestone = i + 1;
+                        playSound('milestone');
+                        break;
+                    }
+                }
+            }
+            
+            // 交换按钮位置
+            function swapButtonPositions(isLastMilestone) {
+                // 交换按钮顺序
+                if (buttonContainer.firstChild === disagreeBtn) {
+                    buttonContainer.removeChild(disagreeBtn);
+                    buttonContainer.appendChild(disagreeBtn);
+                } else {
+                    buttonContainer.removeChild(agreeBtn);
+                    buttonContainer.appendChild(agreeBtn);
+                }
+                
+                // 检查是否是最后一次交换（140分里程碑）
+                if (isLastMilestone) {
+                    // 最后一次交换，只交换按钮底色，不交换文字和功能
+                    const tempClass = agreeBtn.className;
+                    agreeBtn.className = disagreeBtn.className;
+                    disagreeBtn.className = tempClass;
+                }
+            }
+            
+            // 显示胜利界面
+            function showExperienceVictory() {
+                // 重新定义closeExperienceVictory函数
+                window.closeExperienceVictory = function() {
+                    if (window.experienceVictoryModal) {
+                        window.experienceVictoryModal.remove();
+                        window.experienceVictoryModal = null;
+                    }
+                    
+                    // 清理游戏容器
+                    cleanupExperienceChallenge();
+                    
+                    // 继续到下一个关卡
+                    proceedToNextLevel();
+                };
+                
+                // 创建胜利窗口
+                const modal = document.createElement('div');
+                modal.className = 'terms-guide-modal active';
+                modal.style.zIndex = 1000;
+                
+                // Win7风格窗口结构
+                modal.innerHTML = `
+                    <div class="guide-modal-content">
+                        <!-- 窗口标题栏 -->
+                        <div class="modal-titlebar">
+                            <div class="modal-title">🎉 挑战完成</div>
+                            <div class="modal-buttons">
+                                <div class="modal-btn">_</div>
+                                <div class="modal-btn">□</div>
+                                <div class="modal-btn">×</div>
+                            </div>
+                        </div>
+                        <!-- 窗口内容区 -->
+                        <div class="modal-body">
+                            <div class="modal-content">你成功同意了条款！</div>
+                        </div>
+                        <!-- 窗口底部按钮区 -->
+                        <div class="modal-footer">
+                            <button class="btn agree-btn" onclick="closeExperienceVictory()">同意</button>
+                        </div>
+                    </div>
+                `;
+                
+                // 添加到body
+                document.body.appendChild(modal);
+                
+                // 保存modal引用
+                window.experienceVictoryModal = modal;
+                
+                // 播放胜利音效
+                playSound('victory');
+            }
+            
+            // 播放音效
+            function playSound(type) {
+                // 这里可以添加实际的音效播放逻辑
+                console.log(`Playing sound: ${type}`);
+            }
+        }
+        
+
+        
+        // 清理经验关卡
+        function cleanupExperienceChallenge() {
+            // 移除游戏容器
+            const gameContainerEl = document.getElementById('experienceGame');
+            if (gameContainerEl) {
+                gameContainerEl.remove();
+            }
+            
+            // 移除胜利提示窗口
+            if (window.experienceVictoryModal) {
+                window.experienceVictoryModal.remove();
+                window.experienceVictoryModal = null;
+            }
+            
+            // 恢复底部按钮
+            const bottomButtons = document.getElementById('bottomButtons');
+            if (bottomButtons) {
+                bottomButtons.classList.remove('hide-buttons');
+                
+                // 恢复按钮原始状态
+                const agreeBtn = bottomButtons.querySelector('.agree-btn');
+                const disagreeBtn = bottomButtons.querySelector('.disagree-btn');
+                if (agreeBtn && disagreeBtn) {
+                    // 恢复按钮类名
+                    agreeBtn.className = 'btn agree-btn';
+                    disagreeBtn.className = 'btn disagree-btn';
+                    
+                    // 恢复按钮文字
+                    agreeBtn.textContent = '同意';
+                    disagreeBtn.textContent = '不同意';
+                    
+                    // 恢复按钮位置（确保不同意按钮在左侧，同意按钮在右侧）
+                    if (agreeBtn.nextSibling === disagreeBtn) {
+                        bottomButtons.insertBefore(disagreeBtn, agreeBtn);
+                    }
+                    
+                    // 恢复默认事件
+                    agreeBtn.onclick = function(e) {
+                        handleButtonClick(this, handleAgree);
+                    };
+                    
+                    disagreeBtn.onclick = function(e) {
+                        handleButtonClick(this, handleDisagree);
+                    };
+                }
+            }
+            
+            // 移除全局变量
+            if (window.closeExperienceVictory) {
+                try {
+                    delete window.closeExperienceVictory;
+                } catch (e) {
+                    console.log('Error deleting global variable:', e);
+                }
+            }
+        }
+
+        // 加载当前条款内容
+        function loadCurrentTerm() {
+            const termsContent = document.getElementById('termsContent');
+            const termsDirectory = document.getElementById('termsDirectory');
+            const currentTerm = randomTerms[currentTermIndex];
+            const bottomButtons = document.getElementById('bottomButtons');
+
+            // ========== 关键修改3：重置第二个条款的特殊样式 ========== 
+            // 重置内容区样式
+            termsContent.classList.remove('small-height');
+            // 完全重置样式，确保容器恢复到原始大小
+            termsContent.style.width = '';
+            termsContent.style.height = '';
+            termsContent.style.overflowY = '';
+            termsContent.style.backgroundColor = '';
+            termsContent.style.cssText = '';
+            // 显示底部按钮，隐藏内嵌按钮（默认状态）
+            bottomButtons.classList.remove('hide-buttons');
+            
+            // 重置按钮位置（确保不同意按钮在左侧，同意按钮在右侧）
+            const agreeBtn = bottomButtons.querySelector('.agree-btn');
+            const disagreeBtn = bottomButtons.querySelector('.disagree-btn');
+            if (agreeBtn && disagreeBtn) {
+                if (agreeBtn.nextSibling === disagreeBtn) {
+                    bottomButtons.insertBefore(disagreeBtn, agreeBtn);
+                }
+                
+                // 确保按钮文字正确
+                agreeBtn.textContent = '同意';
+                disagreeBtn.textContent = '不同意';
+                
+                // 确保按钮类名正确
+                agreeBtn.className = 'btn agree-btn';
+                disagreeBtn.className = 'btn disagree-btn';
+            }
+
+            // 过滤掉所有补充条款内容
+            const coreContentOnly = currentTerm.content.replace(/补充条款\d+\.\d+：[\s\S]*$/g, '').trim();
+            
+            // 格式化内容：保留换行并增强排版
+            const formattedContent = coreContentOnly.replace(/\n/g, '<br><br>');
+            
+            // 移除原标题的数字序号，拼接当前显示顺序的序号
+            const titleWithoutNumber = currentTerm.title.replace(/^\d+\.\s*/, '');
+            const newTitle = `${currentTermIndex + 1}. ${titleWithoutNumber}`;
+            
+            // 创建新的内容元素
+            const contentWrapper = document.createElement('div');
+            contentWrapper.innerHTML = `
+                <h2 class="text-xl mb-4 font-bold">勇者斗恶龙最终用户许可协议</h2>
+                <p class="mb-6 text-red-700 font-bold">⚠️ 重要提示：以下条款为城堡方独家制定，一经同意不可撤销！</p>
+                <h3 class="font-bold mt-2 mb-3 text-lg text-win7-blue">${newTitle}</h3>
+                <p class="mb-4">${formattedContent}</p>
+                <p class="text-sm text-gray-600">(${currentTermIndex + 1}/${randomTerms.length})</p>
+            `;
+            
+            // 清空termsContent并添加新内容
+            termsContent.innerHTML = '';
+            termsContent.appendChild(contentWrapper);
+            
+            // 重新创建内嵌按钮容器
+            const inlineButtons = document.createElement('div');
+            inlineButtons.className = 'inline-buttons-container';
+            inlineButtons.id = 'inlineButtons';
+            inlineButtons.style.display = 'none';
+            inlineButtons.innerHTML = `
+                <button class="btn disagree-btn" onclick="handleButtonClick(this, handleDisagree)">不同意</button>
+                <button class="btn agree-btn" onclick="handleButtonClick(this, handleAgree)">同意</button>
+            `;
+            termsContent.appendChild(inlineButtons);
+
+            // 更新目录激活状态
+            const directoryItems = termsDirectory.querySelectorAll('.directory-item');
+            directoryItems.forEach((item, index) => {
+                if (index === currentTermIndex) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+
+            // 添加淡入效果
+            termsContent.style.opacity = '0';
+            setTimeout(() => {
+                termsContent.style.opacity = '1';
+            }, 50);
+            
+            // 检查当前条款是否有需要在当前页面进行挑战的关卡（经验、地鼠）
+            const currentLevel = currentLevelAssignments[currentTermIndex];
+            if (currentLevel && (currentLevel.type === 'experienceChallenge' || currentLevel.type === 'whackAMoleChallenge')) {
+                // 添加开始挑战按钮，让玩家主动跳转
+                const startButton = document.createElement('button');
+                startButton.className = 'btn agree-btn';
+                startButton.textContent = '开始挑战';
+                startButton.style.cssText = 'margin-top: 20px; padding: 10px 30px; font-size: 16px;';
+                startButton.onclick = function() {
+                    triggerLevelChallenge(currentLevel);
+                };
+                contentWrapper.appendChild(startButton);
+                
+                // 隐藏底部的同意按钮，使用开始挑战按钮代替
+                bottomButtons.classList.add('hide-buttons');
+            } else if (currentLevel && currentLevel.type === 'movementChallenge') {
+                // 移动关卡直接在原界面进行挑战，不需要开始按钮
+                // 保持底部按钮显示，因为挑战会直接在原界面进行
+                bottomButtons.classList.remove('hide-buttons');
+                // 直接触发移动关卡挑战
+                triggerLevelChallenge(currentLevel);
+            } else if (currentLevel) {
+                // 对于需要换窗口进行挑战的关卡，保持底部同意按钮显示
+                bottomButtons.classList.remove('hide-buttons');
+            }
+        }
+
+        // 生成条款目录
+        function generateTermsDirectory() {
+            const termsDirectory = document.getElementById('termsDirectory');
+            // 清空原有目录
+            termsDirectory.innerHTML = '<h3 class="font-bold mb-4 text-lg text-center border-b pb-2">条款目录</h3>';
+            
+            // 生成条款目录
+            randomTerms.forEach((term, index) => {
+                const dirItem = document.createElement('div');
+                dirItem.className = `directory-item ${index === 0 ? 'active' : ''}`;
+                dirItem.dataset.index = index;
+                // 移除原条款标题中的序号，只保留新的索引序号
+                const titleWithoutNumber = term.title.replace(/^\d+\.\s*/, '');
+                dirItem.textContent = `${index + 1}. ${titleWithoutNumber}`;
+                termsDirectory.appendChild(dirItem);
+            });
+        }
+
+        // 触发当前条款对应的坑人效果
+        function triggerCurrentPrankEffect() {
+            const currentPrankId = randomTerms[currentTermIndex].prankId;
+            if (prankEffects[currentPrankId] && typeof prankEffects[currentPrankId] === 'function') {
+                prankEffects[currentPrankId]();
+            }
+        }
+
+        // 重置所有坑人效果
+        function resetPrankEffects() {
+            // 清理阅读挑战元素
+            cleanupReadChallenge();
+            
+            // 恢复界面样式
+            const windowEl = document.querySelector('.terms-window');
+            const contentEl = document.getElementById('termsContent');
+            const agreeBtn = document.querySelector('.agree-btn');
+            const titleEl = document.querySelector('.win7-titlebar span');
+            const titleBar = document.querySelector('.win7-titlebar');
+            const btnContainer = document.querySelector('.terms-buttons-container');
+            const directoryItems = document.querySelectorAll('.directory-item');
+            const bottomButtons = document.getElementById('bottomButtons');
+            const inlineButtons = document.getElementById('inlineButtons');
+            
+            // 重置通用样式（检查元素是否存在）
+            if (windowEl) windowEl.style.transform = '';
+            if (contentEl) {
+                contentEl.style.transform = '';
+                contentEl.style.filter = '';
+                contentEl.style.color = '';
+                contentEl.style.backgroundColor = '';
+                contentEl.style.fontSize = '';
+                contentEl.style.overflow = '';
+                contentEl.style.width = '';
+                contentEl.style.height = '';
+                contentEl.classList.remove('small-height');
+            }
+            if (agreeBtn) agreeBtn.style.background = '';
+            if (btnContainer) btnContainer.style.transform = '';
+            document.body.style.cursor = '';
+            document.body.style.transform = '';
+            
+            // 重置第二个条款的特殊样式（检查元素是否存在）
+            if (bottomButtons) bottomButtons.classList.remove('hide-buttons');
+            if (inlineButtons) inlineButtons.style.display = 'none';
+            
+            // 恢复标题栏样式（检查元素是否存在）
+            if (titleEl) titleEl.textContent = '勇者斗恶龙专属用户使用条款';
+            if (titleBar) titleBar.style.background = '';
+            
+            // 恢复目录项颜色
+            directoryItems.forEach(item => {
+                item.style.color = '';
+            });
+            
+            // 恢复按钮文字
+            const agreeButtons = document.querySelectorAll('.agree-btn');
+            const disagreeButtons = document.querySelectorAll('.disagree-btn');
+            agreeButtons.forEach(btn => {
+                btn.textContent = '同意';
+            });
+            disagreeButtons.forEach(btn => {
+                btn.textContent = '不同意';
+            });
+        }
+
+        // 开始移动关卡挑战
+        function startMovementChallenge(level) {
+            // 重置关卡状态
+            level.gameOver = false;
+            level.clickCount = 0; // 点击同意按钮的次数
+            level.isMoving = true; // 按钮始终移动
+            level.lastTransformTime = 0; // 上次变不同意按钮的时间
+            level.transformCooldown = 4000; // 4秒冷却
+            level.currentDirectionX = 1; // 当前移动方向X
+            level.currentDirectionY = 1; // 当前移动方向Y
+            
+            // 移动参数
+            const movementParams = {
+                speed: 5,           // 基础移动速度
+                escapeSpeed: 15,    // 鼠标靠近时的逃离速度
+                distanceThreshold: 200 // 鼠标检测距离阈值
+            };
+            
+            // 获取条款内容元素和底部按钮
+            const termsContent = document.getElementById('termsContent');
+            const bottomButtons = document.getElementById('bottomButtons');
+            
+            // 创建隐藏的同意按钮并添加到条款内容容器末尾
+            const hiddenAgreeBtn = document.createElement('span');
+            hiddenAgreeBtn.textContent = '同意';
+            hiddenAgreeBtn.style.cssText = `
+                font-size: 15px;
+                text-decoration: underline;
+                color: #333;
+                cursor: pointer;
+                background: none;
+                border: none;
+                padding: 0;
+                margin: 0;
+            `;
+            hiddenAgreeBtn.onclick = function() {
+                // 点击隐藏同意按钮，直接通关
+                showMovementVictory();
+            };
+            termsContent.appendChild(hiddenAgreeBtn);
+            level.hiddenAgreeBtn = hiddenAgreeBtn;
+            
+            // 获取现有的同意和不同意按钮
+            const agreeBtn = bottomButtons.querySelector('.agree-btn');
+            const disagreeBtn = bottomButtons.querySelector('.disagree-btn');
+            
+            // 获取按钮的原始位置
+            const agreeBtnRect = agreeBtn.getBoundingClientRect();
+            const disagreeBtnRect = disagreeBtn.getBoundingClientRect();
+            
+            // 保存原始按钮状态
+            level.originalAgreeBtn = agreeBtn;
+            level.originalDisagreeBtn = disagreeBtn;
+            level.originalAgreeStyle = agreeBtn.style.cssText;
+            level.originalDisagreeStyle = disagreeBtn.style.cssText;
+            level.originalAgreeOnClick = agreeBtn.onclick;
+            level.originalDisagreeOnClick = disagreeBtn.onclick;
+            level.originalAgreeText = agreeBtn.textContent;
+            level.originalAgreeClass = agreeBtn.className;
+            // 保存原始位置信息
+            level.originalAgreeLeft = agreeBtnRect.left;
+            level.originalAgreeTop = agreeBtnRect.top;
+            level.originalDisagreeLeft = disagreeBtnRect.left;
+            level.originalDisagreeTop = disagreeBtnRect.top;
+            
+            // 先将不同意按钮设置为fixed，保持在原始位置，防止同意按钮移出文档流后影响它
+            disagreeBtn.style.position = 'fixed';
+            disagreeBtn.style.left = level.originalDisagreeLeft + 'px';
+            disagreeBtn.style.top = level.originalDisagreeTop + 'px';
+            disagreeBtn.style.zIndex = '999';
+            disagreeBtn.style.transform = '';
+            
+            // 修改同意按钮样式，使其可移动，但先保持在原始位置
+            agreeBtn.style.position = 'fixed';
+            agreeBtn.style.left = level.originalAgreeLeft + 'px';
+            agreeBtn.style.top = level.originalAgreeTop + 'px';
+            agreeBtn.style.transition = 'left 0.05s ease, top 0.05s ease';
+            agreeBtn.style.zIndex = '1000';
+            // 清除transform，避免干扰
+            agreeBtn.style.transform = '';
+            
+            // 重新绑定按钮事件
+            disagreeBtn.onclick = function() {
+                // 点击不同意按钮，游戏失败
+                cleanupMovementChallenge();
+                handleDisagree();
+            };
+            
+            agreeBtn.onclick = function() {
+                // 增加点击次数
+                level.clickCount++;
+                
+                // 显示气泡提示
+                showBubble(agreeBtn, level.clickCount === 1 ? '你点到我了吗' : '真的点到了吗');
+                
+                // 检查是否达到通关条件
+                if (level.clickCount >= 3) {
+                    // 成功点击同意按钮三次，游戏胜利
+                    showMovementVictory();
+                    return;
+                }
+            };
+            
+            // 随机初始方向
+            level.currentDirectionX = Math.random() > 0.5 ? 1 : -1;
+            level.currentDirectionY = Math.random() > 0.5 ? 1 : -1;
+            
+            // 存储鼠标位置
+            let mouseX = 0;
+            let mouseY = 0;
+            
+            // 添加鼠标移动事件监听到整个文档，确保全屏范围都能检测
+            document.addEventListener('mousemove', handleMouseMove);
+            
+            // 处理鼠标移动 - 仅更新鼠标位置
+            function handleMouseMove(e) {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+            }
+            
+            // 持续移动按钮的循环
+            function updateMovement() {
+                if (level.gameOver) return;
+                
+                const btnRect = agreeBtn.getBoundingClientRect();
+                const btnX = btnRect.left + btnRect.width / 2;
+                const btnY = btnRect.top + btnRect.height / 2;
+                
+                // 计算鼠标与按钮的距离
+                const dx = mouseX - btnX;
+                const dy = mouseY - btnY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                let currentSpeed = movementParams.speed;
+                let moveX, moveY;
+                
+                // 如果鼠标靠近按钮，改变方向逃离
+                if (distance < movementParams.distanceThreshold) {
+                    // 使用逃离速度
+                    currentSpeed = movementParams.escapeSpeed;
+                    
+                    // 计算远离鼠标的方向
+                    const angle = Math.atan2(dy, dx);
+                    moveX = -Math.cos(angle) * currentSpeed;
+                    moveY = -Math.sin(angle) * currentSpeed;
+                    
+                    // 50%概率将同意按钮变为不同意按钮（带冷却）
+                    const now = Date.now();
+                    if (Math.random() < 0.5 && agreeBtn.textContent === '同意' && now - level.lastTransformTime > level.transformCooldown) {
+                        level.lastTransformTime = now;
+                        
+                        // 保存当前位置
+                        const currentLeft = agreeBtn.style.left;
+                        const currentTop = agreeBtn.style.top;
+                        
+                        // 变为不同意按钮
+                        agreeBtn.className = 'btn disagree-btn';
+                        agreeBtn.textContent = '不同意';
+                        agreeBtn.onclick = function() {
+                            // 点击变为不同意的按钮，游戏失败
+                            cleanupMovementChallenge();
+                            handleDisagree();
+                        };
+                        
+                        // 保持位置
+                        agreeBtn.style.left = currentLeft;
+                        agreeBtn.style.top = currentTop;
+                        
+                        // 2秒后变回同意按钮
+                        setTimeout(() => {
+                            if (!level.gameOver && agreeBtn.textContent === '不同意') {
+                                agreeBtn.className = level.originalAgreeClass;
+                                agreeBtn.textContent = level.originalAgreeText;
+                                agreeBtn.onclick = function() {
+                                    // 增加点击次数
+                                    level.clickCount++;
+                                    
+                                    // 显示气泡提示
+                                    showBubble(agreeBtn, level.clickCount === 1 ? '你点到我了吗' : '真的点到了吗');
+                                    
+                                    // 检查是否达到通关条件
+                                    if (level.clickCount >= 3) {
+                                        // 成功点击同意按钮三次，游戏胜利
+                                        showMovementVictory();
+                                        return;
+                                    }
+                                };
+                            }
+                        }, 2000);
+                    }
+                } else {
+                    // 鼠标未靠近时，继续当前方向移动
+                    moveX = level.currentDirectionX * currentSpeed;
+                    moveY = level.currentDirectionY * currentSpeed;
+                }
+                
+                // 获取当前按钮位置
+                let currentLeft = parseFloat(agreeBtn.style.left) || level.originalAgreeLeft;
+                let currentTop = parseFloat(agreeBtn.style.top) || level.originalAgreeTop;
+                
+                // 计算新位置
+                let newLeft = currentLeft + moveX;
+                let newTop = currentTop + moveY;
+                
+                // 限制按钮在整个网页可见区域内
+                const btnWidth = agreeBtn.offsetWidth;
+                const btnHeight = agreeBtn.offsetHeight;
+                const windowWidth = window.innerWidth;
+                const windowHeight = window.innerHeight;
+                
+                // 碰到边界时反弹
+                if (newLeft <= 0 || newLeft >= windowWidth - btnWidth) {
+                    level.currentDirectionX *= -1;
+                    newLeft = Math.max(0, Math.min(windowWidth - btnWidth, newLeft));
+                }
+                if (newTop <= 0 || newTop >= windowHeight - btnHeight) {
+                    level.currentDirectionY *= -1;
+                    newTop = Math.max(0, Math.min(windowHeight - btnHeight, newTop));
+                }
+                
+                // 应用新位置
+                agreeBtn.style.left = newLeft + 'px';
+                agreeBtn.style.top = newTop + 'px';
+                
+                // 继续下一帧
+                requestAnimationFrame(updateMovement);
+            }
+            
+            // 启动移动循环
+            requestAnimationFrame(updateMovement);
+            
+            // 显示气泡提示
+            function showBubble(button, text) {
+                // 移除之前的气泡
+                const existingBubble = document.querySelector('.bubble');
+                if (existingBubble) {
+                    existingBubble.remove();
+                }
+                
+                // 创建气泡元素
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                bubble.style.cssText = `
+                    position: absolute;
+                    background-color: rgba(0, 0, 0, 0.8);
+                    color: white;
+                    padding: 10px 15px;
+                    border-radius: 20px;
+                    font-size: 14px;
+                    z-index: 1000;
+                    pointer-events: none;
+                    animation: bubbleFade 2s ease-out;
+                `;
+                bubble.textContent = text;
+                
+                // 添加动画
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes bubbleFade {
+                        0% { opacity: 0; transform: translateY(20px); }
+                        20% { opacity: 1; transform: translateY(0); }
+                        80% { opacity: 1; transform: translateY(0); }
+                        100% { opacity: 0; transform: translateY(-20px); }
+                    }
+                `;
+                document.head.appendChild(style);
+                
+                // 计算气泡位置
+                const btnRect = button.getBoundingClientRect();
+                const bubbleRect = bubble.getBoundingClientRect();
+                
+                bubble.style.left = (btnRect.left + btnRect.width / 2 - bubbleRect.width / 2) + 'px';
+                bubble.style.top = (btnRect.top - bubbleRect.height - 10) + 'px';
+                
+                // 添加到页面
+                document.body.appendChild(bubble);
+                
+                // 2秒后移除气泡
+                setTimeout(() => {
+                    if (bubble.parentNode) {
+                        bubble.remove();
+                    }
+                    if (style.parentNode) {
+                        style.remove();
+                    }
+                }, 2000);
+            }
+            
+            // 显示胜利窗口
+            function showMovementVictory() {
+                level.gameOver = true;
+                
+                // 创建胜利窗口
+                const modal = document.createElement('div');
+                modal.className = 'terms-guide-modal active';
+                modal.style.zIndex = 1000;
+                
+                // Win7风格窗口结构
+                modal.innerHTML = `
+                    <div class="guide-modal-content">
+                        <!-- 窗口标题栏 -->
+                        <div class="modal-titlebar">
+                            <div class="modal-title">🎉 挑战完成</div>
+                            <div class="modal-buttons">
+                                <div class="modal-btn">_</div>
+                                <div class="modal-btn">□</div>
+                                <div class="modal-btn">×</div>
+                            </div>
+                        </div>
+                        <!-- 窗口内容区 -->
+                        <div class="modal-body">
+                            <div class="modal-content">你成功同意了该条款</div>
+                        </div>
+                        <!-- 窗口底部按钮区 -->
+                        <div class="modal-footer">
+                            <button class="btn agree-btn" onclick="closeMovementVictory()">同意</button>
+                        </div>
+                    </div>
+                `;
+                
+                // 添加到body
+                document.body.appendChild(modal);
+                
+                // 保存modal引用
+                window.movementVictoryModal = modal;
+            }
+            
+            // 清理移动关卡
+            function cleanupMovementChallenge() {
+                // 移除胜利提示窗口
+                if (window.movementVictoryModal) {
+                    try {
+                        window.movementVictoryModal.remove();
+                        window.movementVictoryModal = null;
+                    } catch (e) {
+                        console.log('Error removing victory modal:', e);
+                    }
+                }
+                
+                // 从整个文档上移除鼠标移动事件监听
+                try {
+                    document.removeEventListener('mousemove', handleMouseMove);
+                } catch (e) {
+                    console.log('Error removing event listener:', e);
+                }
+                
+                // 移除隐藏的同意按钮
+                if (level.hiddenAgreeBtn && level.hiddenAgreeBtn.parentNode) {
+                    try {
+                        level.hiddenAgreeBtn.remove();
+                    } catch (e) {
+                        console.log('Error removing hidden agree button:', e);
+                    }
+                }
+                
+                // 恢复按钮原始状态
+                if (level.originalAgreeBtn && level.originalDisagreeBtn) {
+                    try {
+                        // 恢复同意按钮
+                        level.originalAgreeBtn.style.cssText = level.originalAgreeStyle;
+                        level.originalAgreeBtn.onclick = level.originalAgreeOnClick;
+                        
+                        // 恢复不同意按钮
+                        level.originalDisagreeBtn.style.cssText = level.originalDisagreeStyle;
+                        level.originalDisagreeBtn.onclick = level.originalDisagreeOnClick;
+                    } catch (e) {
+                        console.log('Error resetting buttons:', e);
+                    }
+                }
+            }
+            
+            // 关闭胜利窗口
+            window.closeMovementVictory = function() {
+                if (window.movementVictoryModal) {
+                    window.movementVictoryModal.remove();
+                    window.movementVictoryModal = null;
+                }
+                
+                // 清理游戏容器
+                cleanupMovementChallenge();
+                
+                // 继续到下一个关卡
+                proceedToNextLevel();
+            };
+        }
+
+        // 开始后面关卡挑战
+        function startBackChallenge(level) {
+            // 重置关卡状态
+            level.gameOver = false;
+            level.isMoving = true;
+            
+            // 气泡提示文本
+            const bubbleTexts = ["你再看看你后面呢", "还没看见吗", "看看啊"];
+            
+            // 获取条款内容元素和底部按钮
+            const termsContent = document.getElementById('termsContent');
+            const bottomButtons = document.getElementById('bottomButtons');
+            const termsWindow = document.querySelector('.terms-window');
+            
+            // 获取现有的同意和不同意按钮（只处理底部按钮，不处理内嵌按钮）
+            const agreeBtn = bottomButtons.querySelector('.agree-btn');
+            const disagreeBtn = bottomButtons.querySelector('.disagree-btn');
+            
+            // 隐藏内嵌按钮容器，确保按钮不在条款容器内
+            const inlineButtons = document.getElementById('inlineButtons');
+            if (inlineButtons) {
+                inlineButtons.style.display = 'none';
+            }
+            
+            // 保存原始状态
+            level.originalAgreeBtn = agreeBtn;
+            level.originalDisagreeBtn = disagreeBtn;
+            level.originalAgreeStyle = agreeBtn.style.cssText;
+            level.originalDisagreeStyle = disagreeBtn.style.cssText;
+            level.originalAgreeOnClick = agreeBtn.onclick;
+            level.originalDisagreeOnClick = disagreeBtn.onclick;
+            level.originalAgreeText = agreeBtn.textContent;
+            level.originalAgreeClass = agreeBtn.className;
+            level.originalTermsWindowStyle = termsWindow.style.cssText;
+            
+            // 确保条款窗口的z-index高于同意按钮，使其遮挡按钮
+            // 移除termsScreen的z-index设置，避免影响同意按钮的点击
+            termsWindow.style.zIndex = '99';
+            termsWindow.style.position = 'relative';
+            termsWindow.style.background = 'linear-gradient(to bottom, #C5C5C5 0%, #F0F0F0 100%)';
+            termsWindow.style.opacity = '1';
+            
+            // 将同意按钮改为绿底不同意键（保持绿色背景，文字改为不同意）
+            // 保持绿色背景，只修改文字和点击事件
+            agreeBtn.textContent = '不同意';
+            agreeBtn.onclick = function() {
+                // 点击绿底不同意键，游戏失败
+                cleanupBackChallenge();
+                handleDisagree();
+            };
+            
+            // 确保底部的不同意按钮也触发游戏失败
+            disagreeBtn.onclick = function() {
+                // 点击不同意按钮，游戏失败
+                cleanupBackChallenge();
+                handleDisagree();
+            };
+            
+            // 移动整个界面的逻辑 - Windows风格
+            let isDragging = false;
+            let startX, startY;
+            let startTransformX = 0;
+            let startTransformY = 0;
+            
+            // 创建隐藏的真正同意按钮并添加到页面（图层在界面下方，被界面遮挡）
+            const realAgreeBtn = document.createElement('button');
+            realAgreeBtn.className = 'btn agree-btn';
+            realAgreeBtn.textContent = '同意';
+            realAgreeBtn.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) !important;
+                z-index: 98; /* 图层在界面下方但高于其他元素 */
+                padding: 12px 35px;
+                font-size: 16px;
+                min-width: 120px;
+                text-align: center;
+                pointer-events: auto;
+                transition: none !important;
+            `;
+            
+            realAgreeBtn.onclick = function() {
+                // 点击真正的同意按钮，恢复界面位置并通关
+                termsWindow.style.transform = 'translate(0, 0)';
+                showBackVictory();
+            };
+            document.body.appendChild(realAgreeBtn);
+            level.realAgreeBtn = realAgreeBtn;
+            
+            // 获取标题栏元素
+            const titleBar = termsWindow.querySelector('.win7-titlebar');
+            
+            // 添加鼠标事件监听器实现Windows风格的窗口移动
+            if (titleBar) {
+                titleBar.style.cursor = 'move';
+                
+                // 鼠标按下事件
+                titleBar.addEventListener('mousedown', function(e) {
+                    isDragging = true;
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    
+                    // 获取当前的transform值
+                    let currentTransform = termsWindow.style.transform || 'translate(0, 0)';
+                    let match = currentTransform.match(/translate\(([\d-]+)px,\s*([\d-]+)px\)/);
+                    startTransformX = match ? parseInt(match[1]) : 0;
+                    startTransformY = match ? parseInt(match[2]) : 0;
+                    
+                    // 防止文本选择
+                    e.preventDefault();
+                });
+                
+                // 鼠标移动事件
+                document.addEventListener('mousemove', function(e) {
+                    if (!isDragging) return;
+                    
+                    // 计算移动距离
+                    const deltaX = e.clientX - startX;
+                    const deltaY = e.clientY - startY;
+                    
+                    // 计算新位置
+                    const newX = startTransformX + deltaX;
+                    const newY = startTransformY + deltaY;
+                    
+                    // 应用新位置
+                    termsWindow.style.transform = `translate(${newX}px, ${newY}px)`;
+                });
+                
+                // 鼠标释放事件
+                document.addEventListener('mouseup', function() {
+                    isDragging = false;
+                });
+                
+                // 鼠标离开窗口事件
+                document.addEventListener('mouseleave', function() {
+                    isDragging = false;
+                });
+            }
+            
+            // 显示气泡提示的函数（在不同意键附近）
+            function showRandomBubble() {
+                if (level.gameOver) return;
+                
+                const randomText = bubbleTexts[Math.floor(Math.random() * bubbleTexts.length)];
+                
+                // 获取不同意按钮位置
+                const disagreeBtnRect = disagreeBtn.getBoundingClientRect();
+                
+                // 创建气泡元素
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                bubble.style.cssText = `
+                    position: fixed;
+                    left: ${disagreeBtnRect.left + disagreeBtnRect.width / 2}px;
+                    top: ${disagreeBtnRect.top - 50}px;
+                    transform: translateX(-50%);
+                    background-color: rgba(0, 0, 0, 0.8);
+                    color: white;
+                    padding: 12px 18px;
+                    border-radius: 20px;
+                    font-size: 14px;
+                    z-index: 10000;
+                    pointer-events: none;
+                    animation: bubbleFade 4s ease-out;
+                `;
+                bubble.textContent = randomText;
+                
+                // 添加动画
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes bubbleFade {
+                        0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+                        10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+                        90% { opacity: 1; transform: translateX(-50%) translateY(0); }
+                        100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+                    }
+                `;
+                document.head.appendChild(style);
+                
+                // 添加到页面
+                document.body.appendChild(bubble);
+                
+                // 4秒后移除气泡
+                setTimeout(() => {
+                    if (bubble.parentNode) {
+                        bubble.remove();
+                    }
+                    if (style.parentNode) {
+                        style.remove();
+                    }
+                    
+                    // 5秒后再显示新的气泡
+                    if (!level.gameOver) {
+                        setTimeout(showRandomBubble, 5000);
+                    }
+                }, 4000);
+            }
+            
+            // 开始显示气泡
+            showRandomBubble();
+            
+
+            
+            // 显示胜利窗口
+            function showBackVictory() {
+                level.gameOver = true;
+                
+                // 创建胜利窗口
+                const modal = document.createElement('div');
+                modal.className = 'terms-guide-modal active';
+                modal.style.zIndex = 10000;
+                
+                // Win7风格窗口结构
+                modal.innerHTML = `
+                    <div class="guide-modal-content">
+                        <!-- 窗口标题栏 -->
+                        <div class="modal-titlebar">
+                            <div class="modal-title">🎉 挑战完成</div>
+                            <div class="modal-buttons">
+                                <div class="modal-btn">_</div>
+                                <div class="modal-btn">□</div>
+                                <div class="modal-btn">×</div>
+                            </div>
+                        </div>
+                        <!-- 窗口内容区 -->
+                        <div class="modal-body">
+                            <div class="modal-content">你成功发现了藏在后面的同意按钮！</div>
+                        </div>
+                        <!-- 窗口底部按钮区 -->
+                        <div class="modal-footer">
+                            <button class="btn agree-btn" onclick="closeBackVictory()">同意</button>
+                        </div>
+                    </div>
+                `;
+                
+                // 添加到body
+                document.body.appendChild(modal);
+                
+                // 保存modal引用
+                window.backVictoryModal = modal;
+            }
+            
+            // 清理后面关卡
+            function cleanupBackChallenge() {
+                // 移除胜利提示窗口
+                if (window.backVictoryModal) {
+                    try {
+                        window.backVictoryModal.remove();
+                        window.backVictoryModal = null;
+                    } catch (e) {
+                        console.log('Error removing victory modal:', e);
+                    }
+                }
+                
+                // 移除隐藏的真正同意按钮
+                if (level.realAgreeBtn && level.realAgreeBtn.parentNode) {
+                    try {
+                        level.realAgreeBtn.remove();
+                    } catch (e) {
+                        console.log('Error removing real agree button:', e);
+                    }
+                }
+                
+                // 移除鼠标事件监听器
+                try {
+                    document.removeEventListener('mousemove', function(e) {});
+                    document.removeEventListener('mouseup', function() {});
+                    document.removeEventListener('mouseleave', function() {});
+                } catch (e) {
+                    console.log('Error removing event listeners:', e);
+                }
+                
+                // 恢复按钮原始状态
+                if (level.originalAgreeBtn && level.originalDisagreeBtn) {
+                    try {
+                        // 恢复同意按钮
+                level.originalAgreeBtn.style.cssText = level.originalAgreeStyle;
+                level.originalAgreeBtn.onclick = level.originalAgreeOnClick;
+                level.originalAgreeBtn.textContent = level.originalAgreeText;
+                level.originalAgreeBtn.className = level.originalAgreeClass;
+                
+                // 恢复不同意按钮
+                level.originalDisagreeBtn.style.cssText = level.originalDisagreeStyle;
+                level.originalDisagreeBtn.onclick = level.originalDisagreeOnClick;
+                
+                // 恢复内嵌按钮容器的显示状态
+                const inlineButtons = document.getElementById('inlineButtons');
+                if (inlineButtons) {
+                    inlineButtons.style.display = 'none'; // 保持隐藏，与默认状态一致
+                }
+                    } catch (e) {
+                        console.log('Error resetting buttons:', e);
+                    }
+                }
+                
+                // 恢复条款窗口位置和标题栏样式
+                if (termsWindow) {
+                    try {
+                        termsWindow.style.cssText = level.originalTermsWindowStyle;
+                        const titleBar = termsWindow.querySelector('.win7-titlebar');
+                        if (titleBar) {
+                            titleBar.style.cursor = '';
+                        }
+                    } catch (e) {
+                        console.log('Error resetting terms window:', e);
+                    }
+                }
+                
+                // 恢复条款屏幕的z-index和position
+                const termsScreen = document.getElementById('termsScreen');
+                if (termsScreen) {
+                    try {
+                        termsScreen.style.zIndex = '';
+                        termsScreen.style.position = '';
+                    } catch (e) {
+                        console.log('Error resetting terms screen:', e);
+                    }
+                }
+            }
+            
+            // 关闭胜利窗口
+            window.closeBackVictory = function() {
+                if (window.backVictoryModal) {
+                    window.backVictoryModal.remove();
+                    window.backVictoryModal = null;
+                }
+                
+                // 清理游戏容器
+                cleanupBackChallenge();
+                
+                // 继续到下一个关卡
+                proceedToNextLevel();
+            };
+        }
+
+        // 开始确认关卡挑战
+        function startConfirmChallenge(level) {
+            // 重置关卡状态
+            level.gameOver = false;
+            level.checkedBoxes = 0;
+            level.totalBoxes = 8;
+            level.disagreeBtnMoving = false;
+            
+            // 获取条款内容元素和底部按钮
+            const termsContent = document.getElementById('termsContent');
+            const bottomButtons = document.getElementById('bottomButtons');
+            
+            // 获取现有的同意和不同意按钮
+            const agreeBtn = bottomButtons.querySelector('.agree-btn');
+            const disagreeBtn = bottomButtons.querySelector('.disagree-btn');
+            
+            // 保存原始状态
+            level.originalAgreeBtn = agreeBtn;
+            level.originalDisagreeBtn = disagreeBtn;
+            level.originalAgreeStyle = agreeBtn.style.cssText;
+            level.originalDisagreeStyle = disagreeBtn.style.cssText;
+            level.originalAgreeOnClick = agreeBtn.onclick;
+            level.originalDisagreeOnClick = disagreeBtn.onclick;
+            level.originalTermsContentStyle = termsContent.style.cssText;
+            
+            // 缩短条款内容容器
+            termsContent.style.height = '300px';
+            termsContent.style.overflow = 'auto';
+            
+            // 创建同意框容器
+            const checkboxesContainer = document.createElement('div');
+            checkboxesContainer.className = 'checkboxes-container';
+            checkboxesContainer.style.cssText = `
+                width: 100%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                padding: 20px 0;
+                border-top: 1px solid #828282;
+                border-bottom: 1px solid #828282;
+                margin: 20px 0;
+                gap: 15px;
+            `;
+            
+            // 创建8个同意框
+            for (let i = 0; i < level.totalBoxes; i++) {
+                const checkbox = document.createElement('div');
+                checkbox.className = 'confirm-checkbox';
+                checkbox.dataset.index = i;
+                checkbox.style.cssText = `
+                    width: 30px;
+                    height: 30px;
+                    border: 2px solid #828282;
+                    border-radius: 4px;
+                    background-color: white;
+                    cursor: pointer;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    transition: all 0.2s ease;
+                `;
+                
+                // 点击事件
+                checkbox.onclick = function() {
+                    if (this.classList.contains('checked')) {
+                        this.classList.remove('checked');
+                        this.innerHTML = '';
+                        level.checkedBoxes--;
+                    } else {
+                        this.classList.add('checked');
+                        this.innerHTML = '<i class="fa fa-check" style="color: #10B981; font-size: 20px;"></i>';
+                        level.checkedBoxes++;
+                        
+                        // 当点击到第三个小方框时，不同意键开始移动
+                        if (level.checkedBoxes === 3 && !level.disagreeBtnMoving) {
+                            level.disagreeBtnMoving = true;
+                            startDisagreeBtnMovement();
+                        }
+                    }
+                };
+                
+                checkboxesContainer.appendChild(checkbox);
+            }
+            
+            // 将同意框容器插入到条款内容和底部按钮之间
+            termsContent.parentNode.insertBefore(checkboxesContainer, bottomButtons);
+            level.checkboxesContainer = checkboxesContainer;
+            
+            // 重新绑定同意按钮事件
+            agreeBtn.onclick = function() {
+                if (level.checkedBoxes === level.totalBoxes) {
+                    // 所有同意框都已点击，通关
+                    showConfirmVictory();
+                } else {
+                    // 显示气泡提示
+                    showBubble(agreeBtn, '都同意了吗？');
+                }
+            };
+            
+            // 不同意按钮点击事件
+            disagreeBtn.onclick = function() {
+                cleanupConfirmChallenge();
+                handleDisagree();
+            };
+            
+            // 开始不同意按钮移动
+            function startDisagreeBtnMovement() {
+                // 记录鼠标位置历史
+                const mouseHistory = [];
+                const historyLength = 60; // 约1秒的历史（60fps）
+                
+                // 鼠标移动事件
+                document.addEventListener('mousemove', function(e) {
+                    // 记录当前鼠标位置
+                    mouseHistory.push({
+                        x: e.clientX,
+                        y: e.clientY,
+                        timestamp: Date.now()
+                    });
+                    
+                    // 保持历史记录长度
+                    if (mouseHistory.length > historyLength) {
+                        mouseHistory.shift();
+                    }
+                });
+                
+                // 移动不同意按钮
+                function moveDisagreeBtn() {
+                    if (level.gameOver) return;
+                    
+                    // 获取不同意按钮位置
+                    const disagreeBtnRect = disagreeBtn.getBoundingClientRect();
+                    const btnX = disagreeBtnRect.left + disagreeBtnRect.width / 2;
+                    const btnY = disagreeBtnRect.top + disagreeBtnRect.height / 2;
+                    
+                    // 获取1秒前的鼠标位置，如果历史不够则用最早的位置
+                    let targetMouseX = btnX;
+                    let targetMouseY = btnY;
+                    
+                    if (mouseHistory.length > 0) {
+                        // 找到1秒前的位置（或最早的位置）
+                        const targetIndex = Math.max(0, mouseHistory.length - 60);
+                        const targetPosition = mouseHistory[targetIndex];
+                        targetMouseX = targetPosition.x;
+                        targetMouseY = targetPosition.y;
+                    }
+                    
+                    // 计算方向向量
+                    const dx = targetMouseX - btnX;
+                    const dy = targetMouseY - btnY;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    // 有延迟的跟着1秒前的鼠标走，提高精准度
+                    if (distance > 10) {
+                        const moveX = (dx / distance) * 3; // 降低移动速度，提高精准度
+                        const moveY = (dy / distance) * 3;
+                        
+                        // 计算新位置
+                        const currentLeft = parseFloat(disagreeBtn.style.left) || disagreeBtnRect.left;
+                        const currentTop = parseFloat(disagreeBtn.style.top) || disagreeBtnRect.top;
+                        const newLeft = currentLeft + moveX;
+                        const newTop = currentTop + moveY;
+                        
+                        // 限制在屏幕内
+                        const windowWidth = window.innerWidth;
+                        const windowHeight = window.innerHeight;
+                        const newLeftClamped = Math.max(0, Math.min(windowWidth - disagreeBtnRect.width, newLeft));
+                        const newTopClamped = Math.max(0, Math.min(windowHeight - disagreeBtnRect.height, newTop));
+                        
+                        // 应用新位置
+                        disagreeBtn.style.position = 'fixed';
+                        disagreeBtn.style.left = newLeftClamped + 'px';
+                        disagreeBtn.style.top = newTopClamped + 'px';
+                        disagreeBtn.style.zIndex = '1000';
+                    }
+                    
+                    requestAnimationFrame(moveDisagreeBtn);
+                }
+                
+                // 启动移动
+                moveDisagreeBtn();
+            }
+            
+            // 显示气泡提示
+            function showBubble(button, text) {
+                // 移除之前的气泡
+                const existingBubble = document.querySelector('.bubble');
+                if (existingBubble) {
+                    existingBubble.remove();
+                }
+                
+                // 创建气泡元素
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                bubble.style.cssText = `
+                    position: absolute;
+                    background-color: rgba(0, 0, 0, 0.8);
+                    color: white;
+                    padding: 10px 15px;
+                    border-radius: 20px;
+                    font-size: 14px;
+                    z-index: 1000;
+                    pointer-events: none;
+                    animation: bubbleFade 2s ease-out;
+                `;
+                bubble.textContent = text;
+                
+                // 添加动画
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes bubbleFade {
+                        0% { opacity: 0; transform: translateY(20px); }
+                        20% { opacity: 1; transform: translateY(0); }
+                        80% { opacity: 1; transform: translateY(0); }
+                        100% { opacity: 0; transform: translateY(-20px); }
+                    }
+                `;
+                document.head.appendChild(style);
+                
+                // 计算气泡位置
+                const btnRect = button.getBoundingClientRect();
+                const bubbleRect = bubble.getBoundingClientRect();
+                
+                bubble.style.left = (btnRect.left + btnRect.width / 2 - bubbleRect.width / 2) + 'px';
+                bubble.style.top = (btnRect.top - bubbleRect.height - 10) + 'px';
+                
+                // 添加到页面
+                document.body.appendChild(bubble);
+                
+                // 2秒后移除气泡
+                setTimeout(() => {
+                    if (bubble.parentNode) {
+                        bubble.remove();
+                    }
+                    if (style.parentNode) {
+                        style.remove();
+                    }
+                }, 2000);
+            }
+            
+            // 显示胜利窗口
+            function showConfirmVictory() {
+                level.gameOver = true;
+                
+                // 创建胜利窗口
+                const modal = document.createElement('div');
+                modal.className = 'terms-guide-modal active';
+                modal.style.zIndex = 1000;
+                
+                // Win7风格窗口结构
+                modal.innerHTML = `
+                    <div class="guide-modal-content">
+                        <!-- 窗口标题栏 -->
+                        <div class="modal-titlebar">
+                            <div class="modal-title">🎉 挑战完成</div>
+                            <div class="modal-buttons">
+                                <div class="modal-btn">_</div>
+                                <div class="modal-btn">□</div>
+                                <div class="modal-btn">×</div>
+                            </div>
+                        </div>
+                        <!-- 窗口内容区 -->
+                        <div class="modal-body">
+                            <div class="modal-content">你成功确认了所有条款！</div>
+                        </div>
+                        <!-- 窗口底部按钮区 -->
+                        <div class="modal-footer">
+                            <button class="btn agree-btn" onclick="closeConfirmVictory()">同意</button>
+                        </div>
+                    </div>
+                `;
+                
+                // 添加到body
+                document.body.appendChild(modal);
+                
+                // 保存modal引用
+                window.confirmVictoryModal = modal;
+            }
+            
+            // 清理确认关卡
+            function cleanupConfirmChallenge() {
+                // 移除胜利提示窗口
+                if (window.confirmVictoryModal) {
+                    try {
+                        window.confirmVictoryModal.remove();
+                        window.confirmVictoryModal = null;
+                    } catch (e) {
+                        console.log('Error removing victory modal:', e);
+                    }
+                }
+                
+                // 移除同意框容器
+                if (level.checkboxesContainer && level.checkboxesContainer.parentNode) {
+                    try {
+                        level.checkboxesContainer.remove();
+                    } catch (e) {
+                        console.log('Error removing checkboxes container:', e);
+                    }
+                }
+                
+                // 恢复按钮原始状态
+                if (level.originalAgreeBtn && level.originalDisagreeBtn) {
+                    try {
+                        // 恢复同意按钮
+                        level.originalAgreeBtn.style.cssText = level.originalAgreeStyle;
+                        level.originalAgreeBtn.onclick = level.originalAgreeOnClick;
+                        
+                        // 恢复不同意按钮
+                        level.originalDisagreeBtn.style.cssText = level.originalDisagreeStyle;
+                        level.originalDisagreeBtn.onclick = level.originalDisagreeOnClick;
+                    } catch (e) {
+                        console.log('Error resetting buttons:', e);
+                    }
+                }
+                
+                // 恢复条款内容样式
+                if (termsContent) {
+                    try {
+                        termsContent.style.cssText = level.originalTermsContentStyle;
+                    } catch (e) {
+                        console.log('Error resetting terms content:', e);
+                    }
+                }
+            }
+            
+            // 关闭胜利窗口
+            window.closeConfirmVictory = function() {
+                if (window.confirmVictoryModal) {
+                    window.confirmVictoryModal.remove();
+                    window.confirmVictoryModal = null;
+                }
+                
+                // 清理游戏容器
+                cleanupConfirmChallenge();
+                
+                // 继续到下一个关卡
+                proceedToNextLevel();
+            };
+        }
+
+        // 开始叠加关卡挑战
+        function startOverlayChallenge(level) {
+            // 重置关卡状态
+            level.gameOver = false;
+            level.totalWindows = 10;
+            // 在最底层5个中随机选择一个作为有同意键的窗口
+            level.agreeWindowIndex = Math.floor(Math.random() * 5);
+            
+            // 存储所有创建的窗口
+            level.overlayWindows = [];
+            
+            // 获取原始条款窗口
+            const originalTermsWindow = document.querySelector('.terms-window');
+            const originalTermsScreen = document.getElementById('termsScreen');
+            
+            // 保存原始状态
+            level.originalTermsWindow = originalTermsWindow;
+            level.originalTermsScreen = originalTermsScreen;
+            level.originalTermsWindowStyle = originalTermsWindow.style.cssText;
+            level.originalTermsScreenStyle = originalTermsScreen.style.cssText;
+            
+            // 隐藏原始窗口
+            originalTermsWindow.style.display = 'none';
+            
+            // 创建15个叠加窗口
+            for (let i = 0; i < level.totalWindows; i++) {
+                // 克隆原始窗口
+                const windowClone = originalTermsWindow.cloneNode(true);
+                windowClone.id = `overlay-window-${i}`;
+                
+                // 重置样式，确保每个窗口都是独立完整的
+                windowClone.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%) scale(0.7);
+                    transform-origin: center center;
+                    z-index: ${i + 1000};
+                    max-width: 700px;
+                    width: 700px;
+                    margin: 0;
+                    display: block;
+                    cursor: move;
+                    background: linear-gradient(to bottom, #C5C5C5 0%, #F0F0F0 100%);
+                    border: 2px solid #828282;
+                    box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+                    border-radius: 4px;
+                    overflow: hidden;
+                `;
+                
+                // 确保窗口内部元素的样式正确
+                const titleBar = windowClone.querySelector('.win7-titlebar');
+                if (titleBar) {
+                    titleBar.style.cssText = `
+                        background: linear-gradient(to right, #0078D7 0%, #005A9E 100%);
+                        border-bottom: 2px solid #828282;
+                        color: white;
+                        font-weight: bold;
+                        padding: 3px;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                    `;
+                }
+                
+                const termsContent = windowClone.querySelector('.terms-content');
+                if (termsContent) {
+                    termsContent.style.cssText = `
+                        flex: 1;
+                        padding: 20px;
+                        overflow-y: auto;
+                        transition: opacity 0.3s ease;
+                        line-height: 2.2;
+                        font-size: 15px;
+                        background-color: #F0F0F0;
+                    `;
+                }
+                
+                const termsButtonsContainer = windowClone.querySelector('.terms-buttons-container');
+                if (termsButtonsContainer) {
+                    termsButtonsContainer.style.cssText = `
+                        width: 100%;
+                        display: flex;
+                        justify-content: center;
+                        padding: 20px 0;
+                        border-top: 1px solid #828282;
+                        background-color: #E8E8E8;
+                    `;
+                }
+                
+                // 获取克隆窗口中的按钮
+                const agreeBtn = windowClone.querySelector('.agree-btn');
+                const disagreeBtn = windowClone.querySelector('.disagree-btn');
+                
+                // 检查是否是有同意键的窗口
+                if (i === level.agreeWindowIndex) {
+                    // 这个窗口有真正的同意键
+                    agreeBtn.onclick = function() {
+                        // 点击同意键，通关
+                        showOverlayVictory();
+                    };
+                    disagreeBtn.onclick = function() {
+                        // 点击不同意键，失败
+                        cleanupOverlayChallenge();
+                        handleDisagree();
+                    };
+                } else {
+                    // 其他窗口两个按钮都是不同意键
+                    agreeBtn.className = 'btn disagree-btn';
+                    agreeBtn.textContent = '不同意';
+                    agreeBtn.onclick = function() {
+                        // 点击假同意键，失败
+                        cleanupOverlayChallenge();
+                        handleDisagree();
+                    };
+                    disagreeBtn.onclick = function() {
+                        // 点击不同意键，失败
+                        cleanupOverlayChallenge();
+                        handleDisagree();
+                    };
+                }
+                
+                // 添加到页面
+                originalTermsScreen.appendChild(windowClone);
+                level.overlayWindows.push(windowClone);
+                
+                // 添加拖拽功能
+                makeWindowDraggable(windowClone, i);
+            }
+            
+            // 使窗口可拖拽
+            function makeWindowDraggable(windowElement, index) {
+                const titleBar = windowElement.querySelector('.win7-titlebar');
+                let isDragging = false;
+                let startX, startY;
+                let startTransformX = 0;
+                let startTransformY = 0;
+                const scale = 0.7; // 缩放比例
+                
+                if (titleBar) {
+                    titleBar.style.cursor = 'move';
+                    
+                    // 鼠标按下事件
+                    titleBar.addEventListener('mousedown', function(e) {
+                        isDragging = true;
+                        startX = e.clientX;
+                        startY = e.clientY;
+                        
+                        // 获取当前的transform值
+                        let currentTransform = windowElement.style.transform || 'translate(-50%, -50%) scale(0.7)';
+                        let match = currentTransform.match(/translate\(([^,]+),\s*([^)]+)\)/);
+                        if (match) {
+                            let tx = match[1].replace('px', '').replace('%', '');
+                            let ty = match[2].replace('px', '').replace('%', '');
+                            
+                            // 检查是否是百分比
+                            if (match[1].includes('%')) {
+                                // 如果是百分比，转换为像素
+                                startTransformX = (parseFloat(tx) / 100) * window.innerWidth;
+                                startTransformY = (parseFloat(ty) / 100) * window.innerHeight;
+                            } else {
+                                startTransformX = parseFloat(tx);
+                                startTransformY = parseFloat(ty);
+                            }
+                        } else {
+                            startTransformX = window.innerWidth / 2 - 350; // 700px宽度的一半
+                            startTransformY = window.innerHeight / 2 - 300;
+                        }
+                        
+                        // 防止文本选择
+                        e.preventDefault();
+                        
+                        // 把当前窗口移到最上层
+                        const maxZIndex = Math.max(...level.overlayWindows.map((win) => {
+                            return parseInt(win.style.zIndex) || 1000;
+                        }));
+                        windowElement.style.zIndex = maxZIndex + 1;
+                    });
+                }
+                
+                // 鼠标移动事件
+                document.addEventListener('mousemove', function(e) {
+                    if (!isDragging) return;
+                    
+                    // 计算移动距离
+                    const deltaX = e.clientX - startX;
+                    const deltaY = e.clientY - startY;
+                    
+                    // 计算新位置
+                    const newX = startTransformX + deltaX;
+                    const newY = startTransformY + deltaY;
+                    
+                    // 应用新位置
+                    windowElement.style.transform = `translate(${newX}px, ${newY}px) scale(${scale})`;
+                });
+                
+                // 鼠标释放事件
+                document.addEventListener('mouseup', function() {
+                    isDragging = false;
+                });
+                
+                // 鼠标离开窗口事件
+                document.addEventListener('mouseleave', function() {
+                    isDragging = false;
+                });
+            }
+            
+            // 显示胜利窗口
+            function showOverlayVictory() {
+                level.gameOver = true;
+                
+                // 创建胜利窗口
+                const modal = document.createElement('div');
+                modal.className = 'terms-guide-modal active';
+                modal.style.zIndex = 2000;
+                
+                // Win7风格窗口结构
+                modal.innerHTML = `
+                    <div class="guide-modal-content">
+                        <!-- 窗口标题栏 -->
+                        <div class="modal-titlebar">
+                            <div class="modal-title">🎉 挑战完成</div>
+                            <div class="modal-buttons">
+                                <div class="modal-btn">_</div>
+                                <div class="modal-btn">□</div>
+                                <div class="modal-btn">×</div>
+                            </div>
+                        </div>
+                        <!-- 窗口内容区 -->
+                        <div class="modal-body">
+                            <div class="modal-content">你成功找到了真正的同意按钮！</div>
+                        </div>
+                        <!-- 窗口底部按钮区 -->
+                        <div class="modal-footer">
+                            <button class="btn agree-btn" onclick="closeOverlayVictory()">同意</button>
+                        </div>
+                    </div>
+                `;
+                
+                // 添加到body
+                document.body.appendChild(modal);
+                
+                // 保存modal引用
+                window.overlayVictoryModal = modal;
+            }
+            
+            // 清理叠加关卡
+            function cleanupOverlayChallenge() {
+                // 移除胜利提示窗口
+                if (window.overlayVictoryModal) {
+                    try {
+                        window.overlayVictoryModal.remove();
+                        window.overlayVictoryModal = null;
+                    } catch (e) {
+                        console.log('Error removing victory modal:', e);
+                    }
+                }
+                
+                // 移除所有叠加窗口
+                if (level.overlayWindows) {
+                    level.overlayWindows.forEach(windowElement => {
+                        if (windowElement.parentNode) {
+                            try {
+                                windowElement.remove();
+                            } catch (e) {
+                                console.log('Error removing overlay window:', e);
+                            }
+                        }
+                    });
+                }
+                
+                // 恢复原始窗口
+                if (level.originalTermsWindow) {
+                    try {
+                        level.originalTermsWindow.style.cssText = level.originalTermsWindowStyle;
+                        level.originalTermsWindow.style.display = 'block';
+                    } catch (e) {
+                        console.log('Error resetting original window:', e);
+                    }
+                }
+                
+                if (level.originalTermsScreen) {
+                    try {
+                        level.originalTermsScreen.style.cssText = level.originalTermsScreenStyle;
+                    } catch (e) {
+                        console.log('Error resetting terms screen:', e);
+                    }
+                }
+            }
+            
+            // 关闭胜利窗口
+            window.closeOverlayVictory = function() {
+                if (window.overlayVictoryModal) {
+                    window.overlayVictoryModal.remove();
+                    window.overlayVictoryModal = null;
+                }
+                
+                // 清理游戏容器
+                cleanupOverlayChallenge();
+                
+                // 继续到下一个关卡
+                proceedToNextLevel();
+            };
+        }
+
+        // 清理所有关卡相关的内容
+        function cleanupAllChallenges() {
+            // 清理移动关卡
+            if (window.movementVictoryModal) {
+                try {
+                    window.movementVictoryModal.remove();
+                    window.movementVictoryModal = null;
+                } catch (e) {
+                    console.log('Error removing movement victory modal:', e);
+                }
+            }
+            
+            // 清理后面关卡
+            if (window.backVictoryModal) {
+                try {
+                    window.backVictoryModal.remove();
+                    window.backVictoryModal = null;
+                } catch (e) {
+                    console.log('Error removing back victory modal:', e);
+                }
+            }
+            
+            // 清理确认关卡
+            if (window.confirmVictoryModal) {
+                try {
+                    window.confirmVictoryModal.remove();
+                    window.confirmVictoryModal = null;
+                } catch (e) {
+                    console.log('Error removing confirm victory modal:', e);
+                }
+            }
+            
+            // 清理叠加关卡
+            if (window.overlayVictoryModal) {
+                try {
+                    window.overlayVictoryModal.remove();
+                    window.overlayVictoryModal = null;
+                } catch (e) {
+                    console.log('Error removing overlay victory modal:', e);
+                }
+            }
+            
+            // 清理经验关卡
+            if (window.experienceVictoryModal) {
+                try {
+                    window.experienceVictoryModal.remove();
+                    window.experienceVictoryModal = null;
+                } catch (e) {
+                    console.log('Error removing experience victory modal:', e);
+                }
+            }
+            
+            // 清理打地鼠关卡
+            if (window.successModal) {
+                try {
+                    window.successModal.remove();
+                    window.successModal = null;
+                } catch (e) {
+                    console.log('Error removing whack-a-mole success modal:', e);
+                }
+            }
+            
+            // 清理叠加关卡的窗口
+            const overlayWindows = document.querySelectorAll('[id^="overlay-window-"]');
+            overlayWindows.forEach(window => {
+                try {
+                    window.remove();
+                } catch (e) {
+                    console.log('Error removing overlay window:', e);
+                }
+            });
+            
+            // 清理同意框容器
+            const checkboxesContainer = document.querySelector('.checkboxes-container');
+            if (checkboxesContainer) {
+                try {
+                    checkboxesContainer.remove();
+                } catch (e) {
+                    console.log('Error removing checkboxes container:', e);
+                }
+            }
+            
+            // 清理打地鼠游戏容器
+            const whackAMoleGame = document.getElementById('whackAMoleGame');
+            if (whackAMoleGame) {
+                try {
+                    whackAMoleGame.remove();
+                } catch (e) {
+                    console.log('Error removing whack-a-mole game:', e);
+                }
+            }
+            
+            // 清理经验游戏容器
+            const experienceGame = document.getElementById('experienceGame');
+            if (experienceGame) {
+                try {
+                    experienceGame.remove();
+                } catch (e) {
+                    console.log('Error removing experience game:', e);
+                }
+            }
+            
+            // 清理气泡提示
+            const bubbles = document.querySelectorAll('.bubble');
+            bubbles.forEach(bubble => {
+                try {
+                    bubble.remove();
+                } catch (e) {
+                    console.log('Error removing bubble:', e);
+                }
+            });
+            
+            // 清理阅读挑战元素
+            cleanupReadChallenge();
+            
+            // 重置所有坑人效果
+            resetPrankEffects();
+        }
+
+        // 数组随机打乱函数（Fisher-Yates 洗牌算法）
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+    </script>
+</body>
+</html>
