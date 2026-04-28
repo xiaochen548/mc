@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人主页 | 名片·导航·图库</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+            position: relative;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.4s ease;
+        }
+        #bgCanvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: -1;
+            opacity: 1;
+        }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .gallery-item:hover img { transform: scale(1.08); }
+        .gallery-item img { transition: all 0.4s ease; }
+        .timeline-item { position: relative; padding-left: 24px; padding-bottom: 20px; border-left: 2px solid #e5e7eb; }
+        .timeline-item:last-child { border-left-color: transparent; }
+        .timeline-dot { position: absolute; left: -8px; top: 0; width: 14px; height: 14px; border-radius: 50%; background-color: #3b82f6; }
+        .bg-white { background-color: rgba(255,255,255,0.92) !important; }
+        .bg-dark-card { background-color: rgba(30,35,50,0.9) !important; }
+        .theme-toggle { position: fixed; top: 24px; right: 24px; z-index: 50; padding: 12px 16px; border-radius: 12px; cursor: pointer; transition: all 0.3s; }
+    </style>
+</head>
+<body class="bg-[#0a101f] text-gray-700" id="body">
+    <canvas id="bgCanvas"></canvas>
+
+    <!-- 主题切换按钮 -->
+    <div id="themeBtn" class="theme-toggle bg-white text-gray-800 shadow-md">
+        <i class="fas fa-moon"></i> 切换亮色
+    </div>
+
+    <div class="container mx-auto px-4 py-10 max-w-5xl">
+        <!-- 名片 -->
+        <section class="rounded-2xl p-8 shadow-sm mb-12 card-hover bg-white">
+            <div class="flex flex-col md:flex-row items-center gap-6">
+                <img src="https://picsum.photos/120/120" class="w-28 h-28 rounded-full object-cover border-2 border-gray-100">
+                <div class="text-center md:text-left">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-2">你的昵称</h2>
+                    <p class="text-gray-500 mb-4">MC开发者｜静态网站｜技术爱好者</p>
+                    <div class="flex justify-center md:justify-start gap-4 text-lg">
+                        <a href="#" class="text-gray-600 hover:text-blue-500"><i class="fab fa-github"></i></a>
+                        <a href="#" class="text-gray-600 hover:text-green-500"><i class="fab fa-weixin"></i></a>
+                        <a href="#" class="text-gray-600 hover:text-red-500"><i class="fas fa-envelope"></i></a>
+                        <a href="#" class="text-gray-600 hover:text-indigo-500"><i class="fas fa-file-alt"></i></a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 导航 -->
+        <section class="mb-12">
+            <h3 class="text-xl font-bold mb-6 flex items-center text-white" id="navTitle">
+                <i class="fas fa-compass mr-2 text-blue-400"></i>常用导航
+            </h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <a href="#" class="p-5 rounded-xl shadow-sm card-hover text-center bg-white"><i class="fab fa-github text-blue-500 text-xl mb-2"></i><div>GitHub仓库</div></a>
+                <a href="https://www.mcmod.cn/" class="p-5 rounded-xl shadow-sm card-hover text-center bg-white"><i class="fas fa-cube text-green-500 text-xl mb-2"></i><div>MC模组百科</div></a>
+                <a href="https://www.bilibili.com/" class="p-5 rounded-xl shadow-sm card-hover text-center bg-white"><i class="fab fa-bilibili text-pink-500 text-xl mb-2"></i><div>B站</div></a>
+                <a href="https://www.douyin.com/" class="p-5 rounded-xl shadow-sm card-hover text-center bg-white"><i class="fab fa-tiktok text-gray-800 text-xl mb-2"></i><div>抖音</div></a>
+                <a href="https://www.kuaishou.com/" class="p-5 rounded-xl shadow-sm card-hover text-center bg-white"><i class="fas fa-video text-orange-500 text-xl mb-2"></i><div>快手</div></a>
+                <a href="https://tool.oschina.net/" class="p-5 rounded-xl shadow-sm card-hover text-center bg-white"><i class="fas fa-tools text-cyan-500 text-xl mb-2"></i><div>实用工具</div></a>
+                <a href="https://www.baidu.com/" class="p-5 rounded-xl shadow-sm card-hover text-center bg-white"><i class="fas fa-search text-indigo-500 text-xl mb-2"></i><div>全网搜索</div></a>
+                <a href="#" class="p-5 rounded-xl shadow-sm card-hover text-center bg-white"><i class="fas fa-plus text-gray-400 text-xl mb-2"></i><div>更多链接</div></a>
+            </div>
+        </section>
+
+        <!-- 生涯 -->
+        <section class="mb-12">
+            <h3 class="text-xl font-bold mb-6 flex items-center text-white" id="careerTitle">
+                <i class="fas fa-route mr-2 text-purple-400"></i>生涯进程
+            </h3>
+            <div class="rounded-2xl p-8 shadow-sm bg-white">
+                <div class="timeline-item"><div class="timeline-dot"></div><h4 class="font-bold text-gray-800">2025年</h4><p class="text-gray-600 mt-1">创建个人静态网站</p></div>
+                <div class="timeline-item"><div class="timeline-dot"></div><h4 class="font-bold text-gray-800">2024年</h4><p class="text-gray-600 mt-1">学习前端基础</p></div>
+                <div class="timeline-item"><div class="timeline-dot"></div><h4 class="font-bold text-gray-800">2023年</h4><p class="text-gray-600 mt-1">开始接触MC模组开发</p></div>
+            </div>
+        </section>
+
+        <!-- 图库 -->
+        <section class="mb-12">
+            <h3 class="text-xl font-bold mb-6 flex items-center text-white" id="galleryTitle">
+                <i class="fas fa-images mr-2 text-rose-400"></i>图库展示
+            </h3>
+            <div class="flex gap-2 mb-6 flex-wrap">
+                <span class="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-sm">全部图片</span>
+                <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">风景摄影</span>
+                <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">生活随拍</span>
+                <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">MC截图</span>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div class="gallery-item overflow-hidden rounded-xl shadow-sm relative group bg-white">
+                    <img src="https://picsum.photos/600/400?random=1" class="w-full h-48 object-cover">
+                    <a href="https://picsum.photos/600/400?random=1" download="图片1.jpg" class="absolute bottom-2 right-2 bg-black/60 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100">
+                        <i class="fas fa-download"></i>
+                    </a>
+                </div>
+                <div class="gallery-item overflow-hidden rounded-xl shadow-sm relative group bg-white"><img src="https://picsum.photos/600/400?random=2" class="w-full h-48 object-cover"><a href="#" class="absolute bottom-2 right-2 bg-black/60 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100"><i class="fas fa-download"></i></a></div>
+                <div class="gallery-item overflow-hidden rounded-xl shadow-sm relative group bg-white"><img src="https://picsum.photos/600/400?random=3" class="w-full h-48 object-cover"><a href="#" class="absolute bottom-2 right-2 bg-black/60 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100"><i class="fas fa-download"></i></a></div>
+                <div class="gallery-item overflow-hidden rounded-xl shadow-sm relative group bg-white"><img src="https://picsum.photos/600/400?random=4" class="w-full h-48 object-cover"><a href="#" class="absolute bottom-2 right-2 bg-black/60 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100"><i class="fas fa-download"></i></a></div>
+                <div class="gallery-item overflow-hidden rounded-xl shadow-sm relative group bg-white"><img src="https://picsum.photos/600/400?random=5" class="w-full h-48 object-cover"><a href="#" class="absolute bottom-2 right-2 bg-black/60 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100"><i class="fas fa-download"></i></a></div>
+                <div class="gallery-item overflow-hidden rounded-xl shadow-sm relative group bg-white"><img src="https://picsum.photos/600/400?random=6" class="w-full h-48 object-cover"><a href="#" class="absolute bottom-2 right-2 bg-black/60 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100"><i class="fas fa-download"></i></a></div>
+            </div>
+        </section>
+
+        <footer class="text-center text-gray-300 text-sm pt-6 border-t border-gray-700" id="footer">
+            <p>© 2026 个人自留地 | MC指令动态主页</p>
+        </footer>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
+        let isDark = true;
+
+        // 主题切换
+        const themeBtn = document.getElementById('themeBtn');
+        const body = document.getElementById('body');
+        const navTitle = document.getElementById('navTitle');
+        const careerTitle = document.getElementById('careerTitle');
+        const galleryTitle = document.getElementById('galleryTitle');
+        const footer = document.getElementById('footer');
+        const cards = document.querySelectorAll('.bg-white');
+
+        themeBtn.addEventListener('click', () => {
+            isDark = !isDark;
+            if (isDark) {
+                body.className = 'bg-[#0a101f] text-gray-700';
+                themeBtn.className = 'theme-toggle bg-white text-gray-800 shadow-md';
+                themeBtn.innerHTML = '<i class="fas fa-moon"></i> 切换亮色';
+                navTitle.className = 'text-xl font-bold mb-6 flex items-center text-white';
+                careerTitle.className = 'text-xl font-bold mb-6 flex items-center text-white';
+                galleryTitle.className = 'text-xl font-bold mb-6 flex items-center text-white';
+                footer.className = 'text-center text-gray-300 text-sm pt-6 border-t border-gray-700';
+                cards.forEach(c => c.className = 'bg-white rounded-2xl p-8 shadow-sm mb-12 card-hover');
+            } else {
+                body.className = 'bg-white text-gray-800';
+                themeBtn.className = 'theme-toggle bg-gray-800 text-white shadow-md';
+                themeBtn.innerHTML = '<i class="fas fa-sun"></i> 切换暗色';
+                navTitle.className = 'text-xl font-bold mb-6 flex items-center text-gray-800';
+                careerTitle.className = 'text-xl font-bold mb-6 flex items-center text-gray-800';
+                galleryTitle.className = 'text-xl font-bold mb-6 flex items-center text-gray-800';
+                footer.className = 'text-center text-gray-500 text-sm pt-6 border-t border-gray-200';
+                cards.forEach(c => c.className = 'bg-[#f7f7fb] rounded-2xl p-8 shadow-sm mb-12 card-hover');
+            }
+        });
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        const mcCommands = [
+            "/give @s apple 1","/tp @s ~ ~10 ~","/summon zombie ~ ~ ~",
+            "/kill @e[type=item]","/clear @s","/setblock ~ ~1 ~ stone",
+            "/gamemode creative","/gamerule keepInventory true","/effect give @s speed 10 1",
+            "/teleport @p village","/give @s diamond_sword 1","/time set day","/weather clear"
+        ];
+
+        const commands = [];
+        const speed = 1.3;
+        const minDistance = 120;
+
+        function isOverlap(y) {
+            for (let c of commands) {
+                if (Math.abs(c.y - y) < minDistance) return true;
+            }
+            return false;
+        }
+
+        function spawnCommand() {
+            let y = Math.random() * canvas.height;
+            let tries = 0;
+            while (isOverlap(y) && tries < 20) {
+                y = Math.random() * canvas.height;
+                tries++;
+            }
+            if (tries >= 20) return;
+            commands.push({
+                x: -200, y: y,
+                text: mcCommands[Math.floor(Math.random() * mcCommands.length)],
+                speed: speed + Math.random() * 0.4
+            });
+        }
+
+        function draw() {
+            if (isDark) {
+                ctx.fillStyle = 'rgba(10,16,31,0.08)';
+            } else {
+                ctx.fillStyle = 'rgba(255,255,255,0.08)';
+            }
+            ctx.fillRect(0,0,canvas.width,canvas.height);
+
+            ctx.font = '22px "KaiTi", "STKaiti", serif';
+            ctx.textBaseline = "middle";
+
+            for (let i=commands.length-1; i>=0; i--) {
+                const cmd = commands[i];
+                const w = ctx.measureText(cmd.text).width;
+                const h = 28;
+
+                if (isDark) {
+                    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                    ctx.fillRect(cmd.x-6, cmd.y-h/2, w+12, h);
+                    ctx.shadowColor = "#fff";
+                    ctx.shadowBlur = 6;
+                    ctx.fillStyle = "#fff";
+                } else {
+                    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+                    ctx.fillRect(cmd.x-6, cmd.y-h/2, w+12, h);
+                    ctx.shadowColor = "#000";
+                    ctx.shadowBlur = 6;
+                    ctx.fillStyle = "#000";
+                }
+
+                ctx.fillText(cmd.text, cmd.x, cmd.y);
+                ctx.shadowBlur = 0;
+                cmd.x += cmd.speed;
+                if (cmd.x > canvas.width + 200) commands.splice(i,1);
+            }
+
+            if (Math.random() < 0.014) spawnCommand();
+        }
+
+        setInterval(draw, 22);
+    </script>
+</body>
+</html>
