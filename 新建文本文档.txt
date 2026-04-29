@@ -9,234 +9,436 @@
     <style>
         body {
             font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
-            position: relative;
             min-height: 100vh;
             margin: 0;
             padding: 0;
-            transition: background-color 0.4s ease;
+            transition: all 0.4s ease;
         }
         #bgCanvas {
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
             z-index: -1;
-            opacity: 1;
+            background: transparent !important;
         }
         .card-hover { transition: all 0.3s ease; }
         .card-hover:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .gallery-item img { transition: transform 0.4s ease; }
         .gallery-item:hover img { transform: scale(1.08); }
-        .gallery-item img { transition: all 0.4s ease; }
-        .timeline-item { position: relative; padding-left: 24px; padding-bottom: 20px; border-left: 2px solid #e5e7eb; }
+        .timeline-item { position: relative; padding-left: 24px; padding-bottom: 20px; border-left: 2px solid; }
         .timeline-item:last-child { border-left-color: transparent; }
-        .timeline-dot { position: absolute; left: -8px; top: 0; width: 14px; height: 14px; border-radius: 50%; background-color: #3b82f6; }
-        .bg-white { background-color: rgba(255,255,255,0.92) !important; }
-        .bg-dark-card { background-color: rgba(30,35,50,0.9) !important; }
+        .timeline-dot { position: absolute; left: -8px; top: 0; width: 14px; height: 14px; border-radius: 50%; }
         .theme-toggle { position: fixed; top: 24px; right: 24px; z-index: 50; padding: 12px 16px; border-radius: 12px; cursor: pointer; transition: all 0.3s; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 99; display: none; align-items: center; justify-content: center; }
+        .search-modal { border-radius: 16px; padding: 24px; width: 90%; max-width: 400px; transition: all 0.3s ease; }
+
+        /* 气泡框样式 - 最高层级 */
+        .tooltip-bubble {
+            position: absolute;
+            transform: translateX(-50%);
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 14px;
+            white-space: nowrap;
+            z-index: 99999 !important;
+            opacity: 1;
+            pointer-events: auto;
+            animation: fadeIn 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(-8px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        .tooltip-hide {
+            opacity: 0 !important;
+            transition: opacity 1s ease;
+        }
+        .copy-btn {
+            padding: 4px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
     </style>
 </head>
-<body class="bg-[#0a101f] text-gray-700" id="body">
-    <canvas id="bgCanvas"></canvas>
+<body class="bg-[#0a101f] text-gray-200" id="body">
+<canvas id="bgCanvas"></canvas>
 
-    <!-- 主题切换按钮 -->
-    <div id="themeBtn" class="theme-toggle bg-white text-gray-800 shadow-md">
-        <i class="fas fa-moon"></i> 切换亮色
+<div id="themeBtn" class="theme-toggle bg-gray-800 text-white shadow-md">
+    <i class="fas fa-moon"></i> 切换亮色
+</div>
+
+<div class="modal-overlay" id="searchModal">
+    <div class="search-modal bg-gray-800 text-white" id="modalContent">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold">全网搜索</h3>
+            <button onclick="closeModal()" class="text-xl hover:text-red-400"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="grid gap-3">
+            <a href="https://www.baidu.com" target="_blank" class="p-3 rounded-lg bg-gray-700 hover:bg-blue-500 text-center transition-colors">
+                <i class="fas fa-search mr-2"></i>百度搜索
+            </a>
+            <a href="https://www.bing.com" target="_blank" class="p-3 rounded-lg bg-gray-700 hover:bg-green-500 text-center transition-colors">
+                <i class="fas fa-search mr-2"></i>必应搜索
+            </a>
+        </div>
     </div>
+</div>
 
-    <div class="container mx-auto px-4 py-10 max-w-5xl">
-        <!-- 名片 -->
-        <section class="rounded-2xl p-8 shadow-sm mb-12 card-hover bg-white">
-            <div class="flex flex-col md:flex-row items-center gap-6">
-                <img src="https://picsum.photos/120/120" class="w-28 h-28 rounded-full object-cover border-2 border-gray-100">
-                <div class="text-center md:text-left">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-2">你的昵称</h2>
-                    <p class="text-gray-500 mb-4">MC开发者｜静态网站｜技术爱好者</p>
-                    <div class="flex justify-center md:justify-start gap-4 text-lg">
-                        <a href="#" class="text-gray-600 hover:text-blue-500"><i class="fab fa-github"></i></a>
-                        <a href="#" class="text-gray-600 hover:text-green-500"><i class="fab fa-weixin"></i></a>
-                        <a href="#" class="text-gray-600 hover:text-red-500"><i class="fas fa-envelope"></i></a>
-                        <a href="#" class="text-gray-600 hover:text-indigo-500"><i class="fas fa-file-alt"></i></a>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 导航 -->
-        <section class="mb-12">
-            <h3 class="text-xl font-bold mb-6 flex items-center text-white" id="navTitle">
-                <i class="fas fa-compass mr-2 text-blue-400"></i>常用导航
-            </h3>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <a href="#" class="p-5 rounded-xl shadow-sm card-hover text-center bg-white"><i class="fab fa-github text-blue-500 text-xl mb-2"></i><div>GitHub仓库</div></a>
-                <a href="https://www.mcmod.cn/" class="p-5 rounded-xl shadow-sm card-hover text-center bg-white"><i class="fas fa-cube text-green-500 text-xl mb-2"></i><div>MC模组百科</div></a>
-                <a href="https://www.bilibili.com/" class="p-5 rounded-xl shadow-sm card-hover text-center bg-white"><i class="fab fa-bilibili text-pink-500 text-xl mb-2"></i><div>B站</div></a>
-                <a href="https://www.douyin.com/" class="p-5 rounded-xl shadow-sm card-hover text-center bg-white"><i class="fab fa-tiktok text-gray-800 text-xl mb-2"></i><div>抖音</div></a>
-                <a href="https://www.kuaishou.com/" class="p-5 rounded-xl shadow-sm card-hover text-center bg-white"><i class="fas fa-video text-orange-500 text-xl mb-2"></i><div>快手</div></a>
-                <a href="https://tool.oschina.net/" class="p-5 rounded-xl shadow-sm card-hover text-center bg-white"><i class="fas fa-tools text-cyan-500 text-xl mb-2"></i><div>实用工具</div></a>
-                <a href="https://www.baidu.com/" class="p-5 rounded-xl shadow-sm card-hover text-center bg-white"><i class="fas fa-search text-indigo-500 text-xl mb-2"></i><div>全网搜索</div></a>
-                <a href="#" class="p-5 rounded-xl shadow-sm card-hover text-center bg-white"><i class="fas fa-plus text-gray-400 text-xl mb-2"></i><div>更多链接</div></a>
-            </div>
-        </section>
-
-        <!-- 生涯 -->
-        <section class="mb-12">
-            <h3 class="text-xl font-bold mb-6 flex items-center text-white" id="careerTitle">
-                <i class="fas fa-route mr-2 text-purple-400"></i>生涯进程
-            </h3>
-            <div class="rounded-2xl p-8 shadow-sm bg-white">
-                <div class="timeline-item"><div class="timeline-dot"></div><h4 class="font-bold text-gray-800">2025年</h4><p class="text-gray-600 mt-1">创建个人静态网站</p></div>
-                <div class="timeline-item"><div class="timeline-dot"></div><h4 class="font-bold text-gray-800">2024年</h4><p class="text-gray-600 mt-1">学习前端基础</p></div>
-                <div class="timeline-item"><div class="timeline-dot"></div><h4 class="font-bold text-gray-800">2023年</h4><p class="text-gray-600 mt-1">开始接触MC模组开发</p></div>
-            </div>
-        </section>
-
-        <!-- 图库 -->
-        <section class="mb-12">
-            <h3 class="text-xl font-bold mb-6 flex items-center text-white" id="galleryTitle">
-                <i class="fas fa-images mr-2 text-rose-400"></i>图库展示
-            </h3>
-            <div class="flex gap-2 mb-6 flex-wrap">
-                <span class="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-sm">全部图片</span>
-                <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">风景摄影</span>
-                <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">生活随拍</span>
-                <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">MC截图</span>
-            </div>
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <div class="gallery-item overflow-hidden rounded-xl shadow-sm relative group bg-white">
-                    <img src="https://picsum.photos/600/400?random=1" class="w-full h-48 object-cover">
-                    <a href="https://picsum.photos/600/400?random=1" download="图片1.jpg" class="absolute bottom-2 right-2 bg-black/60 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100">
-                        <i class="fas fa-download"></i>
+<div class="container mx-auto px-4 py-10 max-w-5xl">
+    <section class="rounded-2xl p-8 shadow-sm mb-12 card-hover bg-gray-800 card-bg relative">
+        <div class="flex flex-col md:flex-row items-center gap-6">
+            <img src="https://picsum.photos/120/120" class="w-28 h-28 rounded-full object-cover border-2 border-gray-700">
+            <div class="text-center md:text-left">
+                <h2 class="text-2xl font-bold text-white mb-2 timeline-title">你的昵称</h2>
+                <p class="text-gray-300 mb-4 timeline-text">MC开发者｜静态网站｜技术爱好者</p>
+                <div class="flex justify-center md:justify-start gap-4 text-lg relative">
+                    <!-- 微信 -->
+                    <a href="javascript:;" 
+                       onmouseover="showWechat()" 
+                       onmouseout="hideTooltipDelay()"
+                       onclick="showTooltipFixed()"
+                       class="text-gray-300 hover:text-green-400 relative">
+                        <i class="fab fa-weixin"></i>
+                    </a>
+                    <!-- 邮箱 -->
+                    <a href="javascript:;" 
+                       onmouseover="showEmail()" 
+                       onmouseout="hideTooltipDelay()"
+                       onclick="showTooltipFixed()"
+                       class="text-gray-300 hover:text-red-400 relative">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                    <!-- 个人介绍网页 -->
+                    <a href="https://your-personal-page.com" target="_blank" class="text-gray-300 hover:text-indigo-400">
+                        <i class="fas fa-file-alt"></i>
                     </a>
                 </div>
-                <div class="gallery-item overflow-hidden rounded-xl shadow-sm relative group bg-white"><img src="https://picsum.photos/600/400?random=2" class="w-full h-48 object-cover"><a href="#" class="absolute bottom-2 right-2 bg-black/60 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100"><i class="fas fa-download"></i></a></div>
-                <div class="gallery-item overflow-hidden rounded-xl shadow-sm relative group bg-white"><img src="https://picsum.photos/600/400?random=3" class="w-full h-48 object-cover"><a href="#" class="absolute bottom-2 right-2 bg-black/60 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100"><i class="fas fa-download"></i></a></div>
-                <div class="gallery-item overflow-hidden rounded-xl shadow-sm relative group bg-white"><img src="https://picsum.photos/600/400?random=4" class="w-full h-48 object-cover"><a href="#" class="absolute bottom-2 right-2 bg-black/60 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100"><i class="fas fa-download"></i></a></div>
-                <div class="gallery-item overflow-hidden rounded-xl shadow-sm relative group bg-white"><img src="https://picsum.photos/600/400?random=5" class="w-full h-48 object-cover"><a href="#" class="absolute bottom-2 right-2 bg-black/60 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100"><i class="fas fa-download"></i></a></div>
-                <div class="gallery-item overflow-hidden rounded-xl shadow-sm relative group bg-white"><img src="https://picsum.photos/600/400?random=6" class="w-full h-48 object-cover"><a href="#" class="absolute bottom-2 right-2 bg-black/60 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100"><i class="fas fa-download"></i></a></div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <footer class="text-center text-gray-300 text-sm pt-6 border-t border-gray-700" id="footer">
-            <p>© 2026 个人自留地 | MC指令动态主页</p>
-        </footer>
-    </div>
+    <section class="mb-12">
+        <h3 class="text-xl font-bold mb-6 flex items-center text-white section-title">
+            <i class="fas fa-compass mr-2 text-blue-400"></i>常用导航
+        </h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <a href="https://github.com/xiaochen548/mc" target="_blank" class="p-5 rounded-xl shadow-sm card-hover text-center bg-gray-800 card-bg">
+                <i class="fab fa-github text-blue-400 text-xl mb-2"></i><div>GitHub仓库</div>
+            </a>
+            <a href="https://www.mcmod.cn/" target="_blank" class="p-5 rounded-xl shadow-sm card-hover text-center bg-gray-800 card-bg">
+                <i class="fas fa-cube text-green-400 text-xl mb-2"></i><div>MC模组百科</div>
+            </a>
+            <a href="https://www.bilibili.com/" target="_blank" class="p-5 rounded-xl shadow-sm card-hover text-center bg-gray-800 card-bg">
+                <i class="fab fa-bilibili text-pink-400 text-xl mb-2"></i><div>B站</div>
+            </a>
+            <a href="https://www.douyin.com/" target="_blank" class="p-5 rounded-xl shadow-sm card-hover text-center bg-gray-800 card-bg">
+                <i class="fab fa-tiktok text-gray-300 text-xl mb-2"></i><div>抖音</div>
+            </a>
+            <a href="https://www.kuaishou.com/" target="_blank" class="p-5 rounded-xl shadow-sm card-hover text-center bg-gray-800 card-bg">
+                <i class="fas fa-video text-orange-400 text-xl mb-2"></i><div>快手</div>
+            </a>
+            <a href="#" class="p-5 rounded-xl shadow-sm card-hover text-center bg-gray-800 card-bg">
+                <i class="fas fa-tools text-cyan-400 text-xl mb-2"></i><div>自建小游戏</div>
+            </a>
+            <div onclick="openModal()" class="p-5 rounded-xl shadow-sm card-hover text-center bg-gray-800 card-bg cursor-pointer">
+                <i class="fas fa-search text-indigo-400 text-xl mb-2"></i><div>全网搜索</div>
+            </div>
+            <a href="#" class="p-5 rounded-xl shadow-sm card-hover text-center bg-gray-800 card-bg">
+                <i class="fas fa-plus text-gray-400 text-xl mb-2"></i><div>更多链接</div>
+            </a>
+        </div>
+    </section>
 
-    <script>
-        const canvas = document.getElementById('bgCanvas');
-        const ctx = canvas.getContext('2d');
-        let isDark = true;
+    <section class="mb-12">
+        <h3 class="text-xl font-bold mb-6 flex items-center text-white section-title">
+            <i class="fas fa-route mr-2 text-purple-400"></i>MC历程
+        </h3>
+        <div class="rounded-2xl p-8 shadow-sm bg-gray-800 card-bg">
+            <div class="timeline-item border-gray-700">
+                <div class="timeline-dot bg-blue-500"></div>
+                <h4 class="font-bold text-white timeline-title">2009 年：游戏诞生与早期原型</h4>
+                <p class="text-gray-300 mt-1 timeline-text">5 月 13 日：马库斯・佩尔松（Notch）启动项目开发，初名Cave Game，为 MC 最初原型<br>5 月 17 日：Minecraft Classic公开上线，仅支持纯建造玩法，无生存、无怪物，是游戏首个公开版本<br>6 月：推出生存测试版（Survival Test），首次加入生命值、怪物、物品合成，奠定生存玩法基础<br>12 月：游戏进入Indev开发阶段，持续优化地形与基础机制</p>
+            </div>
+            <div class="timeline-item border-gray-700">
+                <div class="timeline-dot bg-blue-500"></div>
+                <h4 class="font-bold text-white timeline-title">2010 年：核心玩法成型</h4>
+                <p class="text-gray-300 mt-1 timeline-text">2 月：进入Infdev无限地形阶段，实现超大地图生成<br>6 月 28 日：Alpha 1.0.0正式发布，加入下界维度、红石系统，生存模式完整化<br>12 月 20 日：Beta 1.0上线，优化多人联机、生物与界面，游戏稳定性大幅提升</p>
+            </div>
+            <div class="timeline-item border-gray-700">
+                <div class="timeline-dot bg-blue-500"></div>
+                <h4 class="font-bold text-white timeline-title">2011 年：正式发布与开发交接</h4>
+                <p class="text-gray-300 mt-1 timeline-text">11 月 18 日：Java 版 1.0.0 正式版全球发售，加入末地、末影龙、附魔、酿造、村民，游戏完整通关闭环形成<br>12 月：Jens Bergensten（Jeb）接任主开发者，Notch 退出核心开发</p>
+            </div>
+            <div class="timeline-item border-gray-700">
+                <div class="timeline-dot bg-blue-500"></div>
+                <h4 class="font-bold text-white timeline-title">2012–2014 年：多平台扩张与商业里程碑</h4>
+                <p class="text-gray-300 mt-1 timeline-text">2012 年：PE 移动版（基岩版前身）、Xbox 360 主机版相继发布，MC 正式登陆移动端与主机平台<br>2014 年 9 月 15 日：微软以 25 亿美元收购 Mojang 工作室，MC 进入微软运营时代<br>2014 年底：全球总销量突破 1 亿份，成为现象级游戏</p>
+            </div>
+            <div class="timeline-item border-gray-700">
+                <div class="timeline-dot bg-blue-500"></div>
+                <h4 class="font-bold text-white timeline-title">2015–2017 年：统一化与国服落地</h4>
+                <p class="text-gray-300 mt-1 timeline-text">2016 年：基岩版完成全平台统一，实现手机、Windows 10、主机跨平台联机<br>2016 年 11 月：Minecraft 教育版正式发布，面向全球校园推出教学功能<br>2017 年 8 月 8 日：网易代理的我的世界中国版正式上线，开启国内本地化运营<br>2017 年：1.12「多彩世界更新」发布，优化生物群系与装饰方块</p>
+            </div>
+            <div class="timeline-item border-gray-700">
+                <div class="timeline-dot bg-blue-500"></div>
+                <h4 class="font-bold text-white timeline-title">2018–2019 年：内容重构大更新</h4>
+                <p class="text-gray-300 mt-1 timeline-text">2018 年：1.13「水域更新」，全面重做海洋生态，新增海底神殿、珊瑚、溺尸<br>2019 年：1.14「村庄与掠夺」重做村民与村庄，加入掠夺者、劫掠兽；1.15「嗡嗡蜂群」加入蜜蜂生态</p>
+            </div>
+            <div class="timeline-item border-gray-700">
+                <div class="timeline-dot bg-blue-500"></div>
+                <h4 class="font-bold text-white timeline-title">2020–2022 年：维度重制与高难度内容</h4>
+                <p class="text-gray-300 mt-1 timeline-text">2020 年 6 月：1.16「下界更新」彻底重写下界，新增绯红森林、猪灵、下界合金装备；全球销量突破 2 亿份<br>2021 年：1.17/1.18「洞穴与山崖更新」分两批上线，世界高度拓展至 -64~320 层，重构山地与洞穴地形<br>2022 年 6 月：1.19「荒野更新」加入深邃黑暗、远古城市、循声守卫，推出游戏最强敌对生物</p>
+            </div>
+            <div class="timeline-item border-gray-700">
+                <div class="timeline-dot bg-blue-500"></div>
+                <h4 class="font-bold text-white timeline-title">2023–2026 年：持续进化与长期运营</h4>
+                <p class="text-gray-300 mt-1 timeline-text">2023 年：1.20「踪迹与故事」更新，加入骆驼、竹制方块、考古系统<br>2024 年：1.21「试炼与奖杯」更新，新增试炼神殿、铜傀儡、风箱等战斗与机械内容<br>2025–2026 年：推出「铜时代」等主题更新，拓展装备、机械与装饰体系；MC 稳居全球销量最高游戏，月活玩家保持亿级规模</p>
+            </div>
+        </div>
+    </section>
 
-        // 主题切换
-        const themeBtn = document.getElementById('themeBtn');
-        const body = document.getElementById('body');
-        const navTitle = document.getElementById('navTitle');
-        const careerTitle = document.getElementById('careerTitle');
-        const galleryTitle = document.getElementById('galleryTitle');
-        const footer = document.getElementById('footer');
-        const cards = document.querySelectorAll('.bg-white');
+    <section class="mb-12">
+        <h3 class="text-xl font-bold mb-6 flex items-center text-white section-title">
+            <i class="fas fa-images mr-2 text-rose-400"></i>图库展示
+        </h3>
+        <div class="flex gap-2 mb-6 flex-wrap">
+            <span class="px-3 py-1 bg-blue-900/30 text-blue-300 rounded-full text-sm">全部图片</span>
+            <span class="px-3 py-1 bg-gray-700 text-gray-300 rounded-full text-sm">风景摄影</span>
+            <span class="px-3 py-1 bg-gray-700 text-gray-300 rounded-full text-sm">生活随拍</span>
+            <span class="px-3 py-1 bg-gray-700 text-gray-300 rounded-full text-sm">MC截图</span>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div class="gallery-item overflow-hidden rounded-xl shadow-sm relative group bg-gray-800 card-bg">
+                <img src="https://picsum.photos/600/400?random=1" class="w-full h-48 object-cover">
+                <a href="https://picsum.photos/600/400?random=1" download class="absolute bottom-2 right-2 bg-black/60 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"><i class="fas fa-download"></i></a>
+            </div>
+            <div class="gallery-item overflow-hidden rounded-xl shadow-sm relative group bg-gray-800 card-bg"><img src="https://picsum.photos/600/400?random=2" class="w-full h-48 object-cover"><a href="#" download class="absolute bottom-2 right-2 bg-black/60 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"><i class="fas fa-download"></i></a></div>
+            <div class="gallery-item overflow-hidden rounded-xl shadow-sm relative group bg-gray-800 card-bg"><img src="https://picsum.photos/600/400?random=3" class="w-full h-48 object-cover"><a href="#" download class="absolute bottom-2 right-2 bg-black/60 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"><i class="fas fa-download"></i></a></div>
+            <div class="gallery-item overflow-hidden rounded-xl shadow-sm relative group bg-gray-800 card-bg"><img src="https://picsum.photos/600/400?random=4" class="w-full h-48 object-cover"><a href="#" download class="absolute bottom-2 right-2 bg-black/60 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"><i class="fas fa-download"></i></a></div>
+            <div class="gallery-item overflow-hidden rounded-xl shadow-sm relative group bg-gray-800 card-bg"><img src="https://picsum.photos/600/400?random=5" class="w-full h-48 object-cover"><a href="#" download class="absolute bottom-2 right-2 bg-black/60 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"><i class="fas fa-download"></i></a></div>
+            <div class="gallery-item overflow-hidden rounded-xl shadow-sm relative group bg-gray-800 card-bg"><img src="https://picsum.photos/600/400?random=6" class="w-full h-48 object-cover"><a href="#" download class="absolute bottom-2 right-2 bg-black/60 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"><i class="fas fa-download"></i></a></div>
+        </div>
+    </section>
 
-        themeBtn.addEventListener('click', () => {
-            isDark = !isDark;
-            if (isDark) {
-                body.className = 'bg-[#0a101f] text-gray-700';
-                themeBtn.className = 'theme-toggle bg-white text-gray-800 shadow-md';
-                themeBtn.innerHTML = '<i class="fas fa-moon"></i> 切换亮色';
-                navTitle.className = 'text-xl font-bold mb-6 flex items-center text-white';
-                careerTitle.className = 'text-xl font-bold mb-6 flex items-center text-white';
-                galleryTitle.className = 'text-xl font-bold mb-6 flex items-center text-white';
-                footer.className = 'text-center text-gray-300 text-sm pt-6 border-t border-gray-700';
-                cards.forEach(c => c.className = 'bg-white rounded-2xl p-8 shadow-sm mb-12 card-hover');
-            } else {
-                body.className = 'bg-white text-gray-800';
-                themeBtn.className = 'theme-toggle bg-gray-800 text-white shadow-md';
-                themeBtn.innerHTML = '<i class="fas fa-sun"></i> 切换暗色';
-                navTitle.className = 'text-xl font-bold mb-6 flex items-center text-gray-800';
-                careerTitle.className = 'text-xl font-bold mb-6 flex items-center text-gray-800';
-                galleryTitle.className = 'text-xl font-bold mb-6 flex items-center text-gray-800';
-                footer.className = 'text-center text-gray-500 text-sm pt-6 border-t border-gray-200';
-                cards.forEach(c => c.className = 'bg-[#f7f7fb] rounded-2xl p-8 shadow-sm mb-12 card-hover');
-            }
+    <footer class="text-center text-gray-400 text-sm pt-6 border-t border-gray-700" id="footer">
+        <p>© 2026 个人自留地 | MC指令动态主页</p>
+    </footer>
+</div>
+
+<script>
+    const canvas = document.getElementById('bgCanvas');
+    const ctx = canvas.getContext('2d');
+    const themeBtn = document.getElementById('themeBtn');
+    const body = document.getElementById('body');
+    const footer = document.getElementById('footer');
+    const cardBg = document.querySelectorAll('.card-bg');
+    const sectionTitles = document.querySelectorAll('.section-title');
+    const searchModal = document.getElementById('searchModal');
+    const modalContent = document.getElementById('modalContent');
+    const timelineTitles = document.querySelectorAll('.timeline-title');
+    const timelineTexts = document.querySelectorAll('.timeline-text');
+
+    let isDark = true;
+    let animationId = null;
+    let activeTooltip = null;
+    let isHovering = false;
+    let hideTimeout = null;
+    let currentCopyText = '';
+
+    // 关闭搜索弹窗
+    function openModal() {
+        searchModal.style.display = "flex";
+        document.body.style.overflow = "hidden";
+    }
+    function closeModal() {
+        searchModal.style.display = "none";
+        document.body.style.overflow = "auto";
+    }
+    searchModal.addEventListener('click', (e) => {
+        if(e.target === searchModal) closeModal();
+    });
+
+    // 主题切换
+    themeBtn.addEventListener('click', () => {
+        isDark = !isDark;
+        if (isDark) {
+            body.className = 'bg-[#0a101f] text-gray-200';
+            themeBtn.className = 'theme-toggle bg-gray-800 text-white shadow-md';
+            themeBtn.innerHTML = '<i class="fas fa-moon"></i> 切换亮色';
+            sectionTitles.forEach(el => el.classList.remove('text-black'));
+            sectionTitles.forEach(el => el.classList.add('text-white'));
+            footer.className = 'text-center text-gray-400 text-sm pt-6 border-t border-gray-700';
+            cardBg.forEach(el => el.classList.remove('bg-white'));
+            cardBg.forEach(el => el.classList.add('bg-gray-800'));
+            timelineTitles.forEach(el => el.classList.remove('text-black'));
+            timelineTitles.forEach(el => el.classList.add('text-white'));
+            timelineTexts.forEach(el => el.classList.remove('text-black'));
+            timelineTexts.forEach(el => el.classList.add('text-gray-300'));
+            modalContent.className = 'search-modal bg-gray-800 text-white';
+        } else {
+            body.className = 'bg-gray-100 text-black';
+            themeBtn.className = 'theme-toggle bg-white text-black shadow-md';
+            themeBtn.innerHTML = '<i class="fas fa-sun"></i> 切换暗色';
+            sectionTitles.forEach(el => el.classList.remove('text-white'));
+            sectionTitles.forEach(el => el.classList.add('text-black'));
+            footer.className = 'text-center text-black text-sm pt-6 border-t border-gray-200';
+            cardBg.forEach(el => el.classList.remove('bg-gray-800'));
+            cardBg.forEach(el => el.classList.add('bg-white'));
+            timelineTitles.forEach(el => el.classList.remove('text-white'));
+            timelineTitles.forEach(el => el.classList.add('text-black'));
+            timelineTexts.forEach(el => el.classList.remove('text-gray-300'));
+            timelineTexts.forEach(el => el.classList.add('text-black'));
+            modalContent.className = 'search-modal bg-white text-black';
+        }
+    });
+
+    // 画布适配
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    // MC指令动画
+    const mcCommands = [
+        "/give @s apple 1","/tp @s ~ ~10 ~","/summon zombie ~ ~ ~",
+        "/kill @e[type=item]","/clear @s","/setblock ~ ~1 ~ stone",
+        "/gamemode creative","/gamerule keepInventory true","/effect give @s speed 10 1",
+        "/teleport @p village","/give @s diamond_sword 1","/time set day","/weather clear"
+    ];
+    const commands = [];
+    const COMMAND_SPEED = 2.2;
+    const MIN_VERTICAL_GAP = 130;
+
+    function spawnCommand() {
+        let y;
+        let attempts = 0;
+        do {
+            y = Math.random() * (canvas.height - 100) + 50;
+            attempts++;
+        } while (commands.some(cmd => Math.abs(cmd.y - y) < MIN_VERTICAL_GAP) && attempts < 25);
+        commands.push({ x: -180, y: y, text: mcCommands[Math.floor(Math.random() * mcCommands.length)] });
+    }
+
+    function drawCommands() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.font = '22px KaiTi, serif';
+        ctx.textBaseline = "middle";
+        ctx.shadowBlur = 8;
+
+        for (let i = commands.length - 1; i >= 0; i--) {
+            const cmd = commands[i];
+            const textWidth = ctx.measureText(cmd.text).width;
+            const padding = 12; const bgHeight = 28;
+
+            ctx.fillStyle = "rgba(0, 0, 0, 0.25)";
+            ctx.fillRect(cmd.x - padding/2, cmd.y - bgHeight/2, textWidth + padding, bgHeight);
+            ctx.fillStyle = isDark ? "#ffffff" : "#000000";
+            ctx.shadowColor = isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.2)";
+            
+            ctx.fillText(cmd.text, cmd.x, cmd.y);
+            cmd.x += COMMAND_SPEED;
+            if (cmd.x > canvas.width + 200) commands.splice(i, 1);
+        }
+        if (Math.random() < 0.013) spawnCommand();
+        animationId = requestAnimationFrame(drawCommands);
+    }
+    drawCommands();
+
+    // ====================== 新版气泡功能（鼠标悬浮+点击常驻+复制按钮+6秒消失）======================
+    function removeTooltip() {
+        if (activeTooltip) {
+            activeTooltip.remove();
+            activeTooltip = null;
+        }
+        if (hideTimeout) {
+            clearTimeout(hideTimeout);
+            hideTimeout = null;
+        }
+    }
+
+    function copyToClipboard() {
+        navigator.clipboard.writeText(currentCopyText).then(() => {
+            alert("复制成功！");
         });
+    }
 
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
+    function showTooltip(element, text, copyText) {
+        currentCopyText = copyText;
+        removeTooltip();
+        isHovering = true;
 
-        const mcCommands = [
-            "/give @s apple 1","/tp @s ~ ~10 ~","/summon zombie ~ ~ ~",
-            "/kill @e[type=item]","/clear @s","/setblock ~ ~1 ~ stone",
-            "/gamemode creative","/gamerule keepInventory true","/effect give @s speed 10 1",
-            "/teleport @p village","/give @s diamond_sword 1","/time set day","/weather clear"
-        ];
-
-        const commands = [];
-        const speed = 1.3;
-        const minDistance = 120;
-
-        function isOverlap(y) {
-            for (let c of commands) {
-                if (Math.abs(c.y - y) < minDistance) return true;
-            }
-            return false;
+        const bubble = document.createElement('div');
+        bubble.className = 'tooltip-bubble';
+        
+        // 主题适配
+        if (isDark) {
+            bubble.style.background = '#1f2937';
+            bubble.style.color = '#fff';
+        } else {
+            bubble.style.background = '#ffffff';
+            bubble.style.color = '#000';
         }
 
-        function spawnCommand() {
-            let y = Math.random() * canvas.height;
-            let tries = 0;
-            while (isOverlap(y) && tries < 20) {
-                y = Math.random() * canvas.height;
-                tries++;
+        // 气泡内容 + 复制按钮
+        bubble.innerHTML = `
+            <span>${text}</span>
+            <div class="copy-btn bg-blue-500 text-white">复制</div>
+        `;
+        bubble.querySelector('.copy-btn').onclick = copyToClipboard;
+        bubble.onclick = (e) => e.stopPropagation();
+
+        document.body.appendChild(bubble);
+        activeTooltip = bubble;
+
+        const rect = element.getBoundingClientRect();
+        bubble.style.left = rect.left + rect.width / 2 + window.scrollX + 'px';
+        bubble.style.top = rect.bottom + 12 + window.scrollY + 'px';
+    }
+
+    // 鼠标离开 → 延迟6秒消失
+    function hideTooltipDelay() {
+        isHovering = false;
+        if (hideTimeout) clearTimeout(hideTimeout);
+        hideTimeout = setTimeout(() => {
+            if (!isHovering && activeTooltip) {
+                activeTooltip.classList.add('tooltip-hide');
+                setTimeout(removeTooltip, 1000);
             }
-            if (tries >= 20) return;
-            commands.push({
-                x: -200, y: y,
-                text: mcCommands[Math.floor(Math.random() * mcCommands.length)],
-                speed: speed + Math.random() * 0.4
-            });
-        }
+        }, 6000);
+    }
 
-        function draw() {
-            if (isDark) {
-                ctx.fillStyle = 'rgba(10,16,31,0.08)';
-            } else {
-                ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    // 点击 → 强制显示6秒
+    function showTooltipFixed() {
+        if (hideTimeout) clearTimeout(hideTimeout);
+        hideTimeout = setTimeout(() => {
+            if (activeTooltip) {
+                activeTooltip.classList.add('tooltip-hide');
+                setTimeout(removeTooltip, 1000);
             }
-            ctx.fillRect(0,0,canvas.width,canvas.height);
+        }, 6000);
+    }
 
-            ctx.font = '22px "KaiTi", "STKaiti", serif';
-            ctx.textBaseline = "middle";
+    // 显示微信
+    function showWechat() {
+        const btn = document.querySelector('.fa-weixin').parentElement;
+        showTooltip(btn, 'd2187684911', 'd2187684911');
+    }
 
-            for (let i=commands.length-1; i>=0; i--) {
-                const cmd = commands[i];
-                const w = ctx.measureText(cmd.text).width;
-                const h = 28;
-
-                if (isDark) {
-                    ctx.fillStyle = 'rgba(0,0,0,0.5)';
-                    ctx.fillRect(cmd.x-6, cmd.y-h/2, w+12, h);
-                    ctx.shadowColor = "#fff";
-                    ctx.shadowBlur = 6;
-                    ctx.fillStyle = "#fff";
-                } else {
-                    ctx.fillStyle = 'rgba(255,255,255,0.5)';
-                    ctx.fillRect(cmd.x-6, cmd.y-h/2, w+12, h);
-                    ctx.shadowColor = "#000";
-                    ctx.shadowBlur = 6;
-                    ctx.fillStyle = "#000";
-                }
-
-                ctx.fillText(cmd.text, cmd.x, cmd.y);
-                ctx.shadowBlur = 0;
-                cmd.x += cmd.speed;
-                if (cmd.x > canvas.width + 200) commands.splice(i,1);
-            }
-
-            if (Math.random() < 0.014) spawnCommand();
-        }
-
-        setInterval(draw, 22);
-    </script>
+    // 显示邮箱
+    function showEmail() {
+        const btn = document.querySelector('.fa-envelope').parentElement;
+        const text = 'q7655805@outlook.com<br>3635593063@qq.com';
+        const copy = 'q7655805@outlook.com\n3635593063@qq.com';
+        showTooltip(btn, text, copy);
+    }
+</script>
 </body>
 </html>
