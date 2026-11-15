@@ -1,0 +1,2072 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>痕域 · 角色配置台</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2313161b'/%3E%3Cpath d='M9 7h4l3 9 3-9h4l-5 14h-4z' fill='%23b87c46'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#0c0e11; --panel:#12151a; --panel2:#171b21; --panel3:#1d222a;
+  --line:#282f39; --line2:#343d49;
+  --txt:#e3e6ea; --dim:#8b939d; --dim2:#69727d;
+  --acc:#b87c46; --acc-l:#d59a63; --acc2:#6f9b93;
+  --warn:#c6a052; --err:#c4675a; --ok:#7ea88a;
+  --mono:ui-monospace,SFMono-Regular,"JetBrains Mono",Menlo,Consolas,"Courier New",monospace;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+svg{width:14px;height:14px;flex:none;display:inline-block;vertical-align:-2px}
+body{
+  margin:0;background:var(--bg);color:var(--txt);
+  font:14px/1.55 system-ui,-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  -webkit-font-smoothing:antialiased;
+  display:flex;flex-direction:column;height:100vh;overflow:hidden;
+}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+::selection{background:rgba(184,124,70,.35)}
+
+/* ---------- header ---------- */
+header{
+  position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:18px;flex:none;
+  padding:11px 18px;border-bottom:1px solid var(--line);
+  background:rgba(12,14,17,.94);backdrop-filter:blur(10px);
+}
+.brand{display:flex;align-items:center;gap:11px;min-width:0}
+.mark{width:30px;height:30px;flex:none;display:grid;place-items:center;border:1px solid var(--line2);background:var(--panel2)}
+.mark svg{width:16px;height:16px;display:block}
+.brand h1{margin:0;font-size:15px;font-weight:650;letter-spacing:.06em;white-space:nowrap}
+.brand p{margin:1px 0 0;font-size:11px;color:var(--dim2);letter-spacing:.08em;white-space:nowrap}
+.hdr-tools{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.proj{display:flex;align-items:center;gap:7px;padding-right:6px;margin-right:2px;border-right:1px solid var(--line)}
+.proj span{font-size:11px;color:var(--dim2);white-space:nowrap}
+.proj input{width:120px;padding:5px 8px;background:var(--panel2);border:1px solid var(--line);border-radius:3px;font-size:12px}
+.proj input:focus{outline:none;border-color:var(--acc)}
+
+.btn{
+  display:inline-flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap;
+  padding:7px 13px;border:1px solid var(--line2);border-radius:3px;
+  background:var(--panel2);color:var(--txt);font-size:12.5px;letter-spacing:.03em;
+  transition:background .15s,border-color .15s,color .15s;
+}
+.btn:hover{background:var(--panel3);border-color:#46505e}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--acc);border-color:var(--acc);color:#15100a;font-weight:650}
+.btn.primary:hover{background:var(--acc-l);border-color:var(--acc-l)}
+.btn.mini{padding:4px 9px;font-size:11.5px;border-radius:2px}
+.btn.link{padding:0;border:0;background:none;color:var(--acc-l);font-size:12px}
+.btn.link:hover{text-decoration:underline;background:none}
+.btn svg{width:13px;height:13px;flex:none}
+
+/* ---------- layout ---------- */
+.work{display:grid;grid-template-columns:238px minmax(0,1fr) 404px;flex:1;min-height:0}
+nav{overflow-y:auto;border-right:1px solid var(--line);background:var(--panel);padding:14px 10px 40px}
+main{overflow-y:auto;padding:22px 26px 80px}
+aside{display:flex;flex-direction:column;min-height:0;border-left:1px solid var(--line);background:var(--panel)}
+
+/* ---------- nav ---------- */
+.nav-t{display:flex;align-items:center;justify-content:space-between;padding:0 8px 8px;font-size:11px;letter-spacing:.14em;color:var(--dim2)}
+.nav-new{padding:0 8px 12px}
+.nav-new .btn{width:100%;justify-content:center}
+.chip{
+  display:flex;align-items:flex-start;gap:9px;width:100%;text-align:left;cursor:pointer;
+  padding:8px 9px;margin-bottom:3px;border:1px solid transparent;border-left:2px solid transparent;
+  border-radius:2px;background:none;
+}
+.chip:hover{background:var(--panel2)}
+.chip.on{background:var(--panel2);border-color:var(--line);border-left-color:var(--acc)}
+.chip .dot{width:6px;height:6px;margin-top:6px;flex:none;background:var(--dim2);border-radius:50%}
+.chip.on .dot{background:var(--acc)}
+.chip .ct{min-width:0;flex:1}
+.chip .cn{display:block;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip .cm{display:block;margin-top:2px;font:10.5px/1.4 var(--mono);color:var(--dim2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav-sep{height:1px;margin:14px 8px 12px;background:var(--line)}
+.nav-item{
+  display:flex;align-items:center;gap:8px;width:100%;text-align:left;cursor:pointer;
+  padding:7px 9px;border-radius:2px;background:none;border:1px solid transparent;color:var(--dim);font-size:12.5px;
+}
+.nav-item:hover{background:var(--panel2);color:var(--txt)}
+.nav-item.on{background:var(--panel2);border-color:var(--line);color:var(--txt)}
+.nav-item.on .ni-i{color:var(--acc)}
+.nav-item .ni-i{color:var(--dim2);display:flex;flex:none}
+.nav-item svg{width:14px;height:14px}
+.nav-item .kbd{margin-left:auto;font:10px var(--mono);color:var(--dim2)}
+
+/* ---------- main content ---------- */
+.vh{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.vh h2{margin:0;font-size:19px;font-weight:650;letter-spacing:.02em}
+.vh p{margin:4px 0 0;font-size:12px;color:var(--dim)}
+.vh .act{display:flex;gap:8px;flex:none}
+.sec{border:1px solid var(--line);background:var(--panel);margin-bottom:16px;border-radius:2px}
+.sec-hd{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--panel2)}
+.sec-hd .idx{font:11px var(--mono);color:var(--acc);letter-spacing:.1em}
+.sec-hd h3{margin:0;font-size:13px;font-weight:600;letter-spacing:.04em}
+.sec-hd .hint{margin-left:auto;font-size:11px;color:var(--dim2);text-align:right}
+.sec-bd{padding:14px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px 16px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px 16px}
+.full{grid-column:1/-1}
+.fld{display:flex;flex-direction:column;gap:5px;min-width:0}
+.fld label{font-size:11.5px;color:var(--dim);letter-spacing:.04em;display:flex;align-items:center;gap:6px}
+.fld label .rq{color:var(--acc);font-size:11px}
+.fld label .ty{margin-left:auto;font:10px var(--mono);color:var(--dim2)}
+.fld input[type=text],.fld input[type=number],.fld select,.fld textarea{
+  width:100%;padding:7px 10px;background:var(--panel2);border:1px solid var(--line);
+  border-radius:2px;font-size:13px;transition:border-color .15s,background .15s;
+}
+.fld input:focus,.fld select:focus,.fld textarea:focus{outline:none;border-color:var(--acc);background:#191e25}
+.fld textarea{resize:vertical;min-height:64px;line-height:1.6}
+.fld input[type=number]{font-family:var(--mono)}
+.fld .fh{font-size:10.5px;color:var(--dim2);font-family:var(--mono)}
+.fld.bad input,.fld.bad select{border-color:var(--err)}
+select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--dim) 50%),linear-gradient(135deg,var(--dim) 50%,transparent 50%);background-position:calc(100% - 15px) 14px,calc(100% - 10px) 14px;background-size:5px 5px;background-repeat:no-repeat;padding-right:28px!important}
+.switch{display:flex;align-items:center;gap:9px;cursor:pointer;font-size:12px;color:var(--dim)}
+.switch input{width:0;height:0;position:absolute;opacity:0}
+.switch .track{width:32px;height:17px;flex:none;border:1px solid var(--line2);background:var(--panel3);border-radius:9px;position:relative;transition:.15s}
+.switch .track::after{content:"";position:absolute;left:2px;top:2px;width:11px;height:11px;background:var(--dim);border-radius:50%;transition:.15s}
+.switch input:checked + .track{background:rgba(184,124,70,.2);border-color:var(--acc)}
+.switch input:checked + .track::after{left:17px;background:var(--acc-l)}
+.switch input:checked ~ .lb{color:var(--txt)}
+.note{padding:9px 12px;border-left:2px solid var(--line2);background:var(--panel2);font-size:11.5px;color:var(--dim);line-height:1.7}
+.note.w{border-left-color:var(--warn)}
+.note.e{border-left-color:var(--err)}
+.note strong{color:var(--txt);font-weight:600}
+
+/* skill slot */
+.slot{border:1px solid var(--line);background:var(--panel);margin-bottom:12px}
+.slot-hd{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--panel2);border-bottom:1px solid var(--line);cursor:pointer;user-select:none}
+.slot-hd .nm{font-size:12.5px;font-weight:600;letter-spacing:.04em}
+.slot-hd .fl{font:10.5px var(--mono);color:var(--dim2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.slot-hd .chev{margin-left:auto;color:var(--dim2);transition:.2s}
+.slot.closed .chev{transform:rotate(-90deg)}
+.slot.closed .slot-bd{display:none}
+.slot-bd{padding:12px}
+.refbox{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 14px}
+.ref{display:flex;flex-direction:column;gap:3px;padding:7px 9px;border:1px solid var(--line);background:var(--panel2);min-width:0}
+.ref .rl{font-size:11px;color:var(--dim)}
+.ref .rp{font:10.5px/1.5 var(--mono);color:var(--acc2);word-break:break-all}
+
+/* ---------- aside ---------- */
+.as-hd{display:flex;align-items:center;gap:9px;padding:9px 12px;border-bottom:1px solid var(--line);background:var(--panel2);font-size:11.5px;letter-spacing:.1em;color:var(--dim)}
+.as-hd .cnt{margin-left:auto;font:10px var(--mono);color:var(--dim2)}
+.val{border-bottom:1px solid var(--line);max-height:200px;overflow-y:auto;padding:9px 12px;flex:none}
+.val.ok{color:var(--ok);font-size:11.5px;display:flex;gap:7px;align-items:center}
+.vitem{display:flex;gap:7px;font-size:11.5px;line-height:1.55;margin-bottom:5px;align-items:flex-start}
+.vitem .dm{width:5px;height:5px;flex:none;margin-top:6px;border-radius:50%}
+.vitem.err .dm{background:var(--err)} .vitem.err .vt{color:#dd9b90}
+.vitem.warn .dm{background:var(--warn)} .vitem.warn .vt{color:#cdb681}
+.vitem .vt{min-width:0}
+.tree{flex:none;max-height:236px;overflow-y:auto;padding:8px 6px;border-bottom:1px solid var(--line)}
+.tnode{display:flex;align-items:center;gap:7px;padding:5px 8px;cursor:pointer;font-size:11.5px;color:var(--dim);border-radius:2px}
+.tnode:hover{background:var(--panel2);color:var(--txt)}
+.tnode.on{background:var(--panel2);color:var(--txt);box-shadow:inset 2px 0 0 var(--acc)}
+.tnode .ti{flex:none;color:var(--dim2);display:flex}
+.tnode svg{width:12px;height:12px}
+.tnode .tp{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tnode .ts{margin-left:auto;font:10px var(--mono);color:var(--dim2);flex:none}
+.tgroup{padding:6px 8px 3px;font:10px var(--mono);color:var(--dim2);letter-spacing:.06em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prev-hd{display:flex;align-items:center;gap:8px;padding:7px 12px;font:10.5px var(--mono);color:var(--acc2);border-bottom:1px solid var(--line);min-height:32px}
+.prev-hd .pn{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prev-hd .btn{margin-left:auto}
+.code{
+  margin:0;flex:1;overflow:auto;padding:12px 14px;font:11.5px/1.65 var(--mono);
+  color:#c9d1d9;white-space:pre-wrap;word-break:break-word;tab-size:2;background:#0a0c0e;
+}
+.code .k{color:var(--acc-l)} .code .s{color:#9db98c} .code .c{color:#5f6b78} .code .n{color:#c9a78b}
+
+/* ---------- schema tables ---------- */
+.tbl{width:100%;border-collapse:collapse;table-layout:fixed;font-size:12px}
+.tbl th{text-align:left;font-weight:500;font-size:11px;color:var(--dim2);letter-spacing:.06em;padding:6px 8px;border-bottom:1px solid var(--line)}
+.tbl td{padding:4px 8px;border-bottom:1px solid rgba(40,47,57,.6);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:0}
+.tbl input[type=text],.tbl select{width:100%;padding:5px 8px;background:var(--panel2);border:1px solid var(--line);border-radius:2px;font-size:12px}
+.tbl input[type=text]:focus,.tbl select:focus{outline:none;border-color:var(--acc)}
+.tbl .lb{color:var(--dim);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tbl .mono{font-family:var(--mono);font-size:11px}
+details.grp{border:1px solid var(--line);margin-bottom:10px;background:var(--panel)}
+details.grp[open] .sum{border-bottom:1px solid var(--line)}
+.sum{display:flex;align-items:center;gap:9px;padding:9px 12px;cursor:pointer;font-size:12.5px;font-weight:600;letter-spacing:.03em;background:var(--panel2);list-style:none}
+.sum::-webkit-details-marker{display:none}
+.sum .tag{margin-left:auto;font:10px var(--mono);color:var(--dim2);font-weight:400}
+.sum .ar{color:var(--dim2);font-size:10px}
+details.grp .tbl{padding:0}
+.tbl-wrap{padding:6px 8px 8px}
+textarea.big{width:100%;min-height:150px;padding:10px;background:#0a0c0e;border:1px solid var(--line);border-radius:2px;font:11.5px/1.6 var(--mono);resize:vertical}
+textarea.big:focus{outline:none;border-color:var(--acc)}
+.mono-sm{font:11px/1.6 var(--mono);color:var(--dim)}
+.help h4{margin:18px 0 6px;font-size:12px;color:var(--acc-l);letter-spacing:.05em}
+.help p,.help li{font-size:12.5px;color:var(--dim);line-height:1.8}
+.help li{margin-bottom:3px}
+.help code{font:11.5px var(--mono);color:var(--acc2);background:var(--panel2);padding:1px 4px;border-radius:2px}
+.help ol{padding-left:20px;margin:6px 0}
+
+@media (max-width:1240px){
+  .work{grid-template-columns:210px minmax(0,1fr) 340px}
+  main{padding:18px}
+}
+@media (max-width:1000px){
+  .work{grid-template-columns:minmax(0,1fr)}
+  nav{display:block;position:fixed;top:0;bottom:0;left:0;width:min(292px,88vw);z-index:50;
+    transform:translateX(-101%);transition:transform .25s;box-shadow:12px 0 30px rgba(0,0,0,.5);padding-top:14px}
+  body.show-nav nav{transform:none}
+  aside{position:fixed;top:0;bottom:0;right:0;width:min(430px,94vw);z-index:50;transform:translateX(101%);transition:transform .25s;box-shadow:-12px 0 30px rgba(0,0,0,.5)}
+  body.show-aside aside{transform:none}
+  #scrim{position:fixed;inset:0;z-index:45;background:rgba(0,0,0,.55);display:none}
+  body.show-nav #scrim,body.show-aside #scrim{display:block}
+  #fabs{display:flex}
+  .grid2,.grid3,.refbox{grid-template-columns:minmax(0,1fr)}
+  header{padding:10px 12px;gap:10px}
+  .proj{display:none}
+}
+#fabs{display:flex;position:fixed;right:14px;bottom:16px;z-index:60;gap:8px}
+@media (min-width:1001px){#fabs{display:none}}
+#fabs .btn{box-shadow:0 6px 18px rgba(0,0,0,.5);background:var(--panel3)}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <span class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 4h4l3 10 3-10h4l-5 16h-4z" fill="#b87c46"/></svg></span>
+    <div>
+      <h1>痕域 · 角色配置台</h1>
+      <p>角色卡 / 七槽技能 / 总表登记 —— 直接生成 .tres</p>
+    </div>
+  </div>
+  <div class="hdr-tools">
+    <label class="proj"><span>项目名</span><input id="projName" type="text" value="痕域" spellcheck="false"></label>
+    <button class="btn" id="btnSample" title="填入一个示例角色，便于先看到完整输出">示例</button>
+    <button class="btn" id="btnImport" title="导入此前导出的 .json 草稿">导入项目</button>
+    <button class="btn" id="btnExport" title="把当前填写的所有角色存成 .json，便于以后继续编辑">导出项目</button>
+    <button class="btn primary" id="btnGen">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 19h14"/></svg>
+      生成并下载
+    </button>
+  </div>
+</header>
+<div class="work">
+  <nav id="nav"></nav>
+  <main id="main"></main>
+  <aside id="aside"></aside>
+</div>
+<div id="scrim"></div>
+<div id="fabs">
+  <button class="btn mini" data-act="toggle-nav">角色</button>
+  <button class="btn mini" data-act="toggle-aside">输出</button>
+</div>
+<input type="file" id="fileIn" accept=".json,application/json" hidden>
+<script>
+'use strict';
+/* ============================================================
+   痕域 · 角色配置台
+   单文件离线工具：填写 → 校验 → 生成 Godot .tres → 打包下载
+   ============================================================ */
+
+/* ---------- 常量：枚举与默认路径 ---------- */
+const FATE_LIST  = ['沉刻','烬残','溯洄','续痕','破晓','妄溯','忆守庭'];
+const CLASS_LIST = ['冕荒者','猎迹者','烬谛者','追刃者','御骸者','傀儡守卫','碎界者'];
+const TRIGGER_LIST = ['战斗开始','回合开始','行动后','受击后','击杀后','暴击后','交锋胜利','任意时机'];
+
+/* 英文变量名 → 中文字段名的同义词表（导入参考 .tres 时兜底） */
+const SYN = {
+  id:['唯一编号'], uuid:['唯一编号'], key:['唯一编号'], char_id:['唯一编号'],
+  name:['卡牌名称','名称','被动名称','技能名称','回响名称','终结技名称','普攻名称'], card_name:['卡牌名称'], title:['卡牌名称'],
+  cost:['购买费用'], price:['购买费用'], buy_cost:['购买费用'],
+  fate:['命途'], path:['命途'],
+  job:['职业'], cls:['职业'], class:['职业'], profession:['职业'],
+  faction:['羁绊阵营'], camp:['羁绊阵营'], bond_faction:['羁绊阵营'],
+  job1:['羁绊职业一'], bond_job1:['羁绊职业一'], job2:['羁绊职业二'], bond_job2:['羁绊职业二'],
+  clash:['基础交锋值'], clash_value:['基础交锋值'],
+  hp:['生命'], health:['生命'], max_hp:['生命'],
+  atk:['攻击'], attack:['攻击'], def:['防御'], defense:['防御'],
+  spd:['速度'], speed:['速度'],
+  crit:['暴击率'], crit_rate:['暴击率'], crit_dmg:['暴伤'], crit_damage:['暴伤'],
+  hit:['效果命中'], effect_hit:['效果命中'], res:['抵抗'], resist:['抵抗'],
+  er:['能量回复效率'], energy_regen:['能量回复效率'], energy_max:['能量上限'], max_energy:['能量上限'],
+  desc:['描述'], description:['描述'], text:['描述'],
+  ratio:['伤害倍率','倍率'], multiplier:['伤害倍率','倍率'], damage_ratio:['伤害倍率'], power:['伤害倍率','倍率'],
+  hits:['段数'], times:['段数'], count:['段数'],
+  trigger:['触发条件','触发时机'], timing:['触发时机'], when:['触发时机'],
+  energy:['能量消耗'], energy_cost:['能量消耗'],
+  deathrattle:['机制名称'], death_rattle:['机制名称'], on_death:['机制名称'], mech:['机制名称'], mechanic:['机制名称'],
+  mech_name:['机制名称'], mechanic_name:['机制名称'],
+  condition:['触发条件'], trigger_condition:['触发条件'], cond:['触发条件'],
+  effect:['触发后效果','效果说明'], mech_effect:['效果说明'], effect_text:['效果说明'],
+  '亡语':['机制名称'], '死亡触发':['机制名称'], '机制':['机制名称'], '效果':['效果说明','触发后效果']
+};
+
+const SLOT_DEF = {
+  passive:    { label:'被动',     sk:'passive', cls:'被动技能数据', path:'res://脚本文件/数据脚本/被动技能数据.gd' },
+  normal:     { label:'普攻',     sk:'normal',  cls:'技能数据',     path:'res://脚本文件/数据脚本/技能数据.gd' },
+  skill:      { label:'战技',     sk:'skill',   cls:'技能数据',     path:'res://脚本文件/数据脚本/技能数据.gd' },
+  skillPlus:  { label:'强化战技', sk:'skillPlus',  cls:'技能数据',     path:'res://脚本文件/数据脚本/技能数据.gd' },
+  skillElite: { label:'精英战技', sk:'skillElite', cls:'技能数据',     path:'res://脚本文件/数据脚本/技能数据.gd' },
+  echo:       { label:'回响',     sk:'echo',    cls:'回响数据',     path:'res://脚本文件/数据脚本/回响数据.gd' },
+  ult:        { label:'终结技',   sk:'ult',     cls:'终结技数据',   path:'res://脚本文件/数据脚本/终结技数据.gd' },
+  bossSkill:  { label:'BOSS战技', sk:'skill',   cls:'技能数据',     path:'res://脚本文件/数据脚本/技能数据.gd' },
+  bossUlt:    { label:'终结技',   sk:'bossUlt', cls:'终结技数据',   path:'res://脚本文件/数据脚本/终结技数据.gd' }
+};
+const SLOT_ORDER = ['passive','normal','skill','skillPlus','skillElite','echo','ult'];
+const ALL_SLOTS = SLOT_ORDER.concat(['bossSkill','bossUlt']);
+
+/* 三类实体：角色 / 怪物 / BOSS */
+const KIND_DEF = {
+  char: {
+    label:'角色', one:'角色',
+    cardDir:'charDir', skillDir:'skillDir', cardSk:'card', cardScript:'card',
+    slots: SLOT_ORDER, slotHint:'七槽：被动 / 普攻 / 战技 / 强化战技 / 精英战技 / 回响 / 终结技'
+  },
+  mob: {
+    label:'怪物', one:'怪物',
+    cardDir:'mobDir', skillDir:'mobSkillDir', cardSk:'mobCard', cardScript:'mobCard',
+    slots: ['normal','skill'], slotHint:'两槽：普攻 / 战技（独特机制写在卡上）'
+  },
+  boss: {
+    label:'BOSS', one:'BOSS',
+    cardDir:'bossDir', skillDir:'bossSkillDir', cardSk:'bossCard', cardScript:'bossCard',
+    slots: ['normal','skill','bossSkill','bossUlt'], slotHint:'四槽：普攻 / 战技 / BOSS战技 / 终结技'
+  }
+};
+
+/* ---------- 默认字段表（属性名可在「字段映射」里改） ---------- */
+function cardSchema(){
+  return [
+    { key:'id',    label:'唯一编号', prop:'唯一编号', type:'string', req:true,  on:true, ph:'newchar_001', hint:'全项目唯一，建议拼音_序号' },
+    { key:'name',  label:'卡牌名称', prop:'卡牌名称', type:'string', req:true,  on:true, ph:'蚀灯者·柯兰' },
+    { key:'cost',  label:'购买费用', prop:'购买费用', type:'int',    req:true,  on:true, ph:'3', hint:'1–5，决定商店档位' },
+    { key:'fate',  label:'命途',     prop:'命途',     type:'enum',   req:true,  on:true, list:FATE_LIST },
+    { key:'class', label:'职业',     prop:'职业',     type:'enum',   req:true,  on:true, list:CLASS_LIST },
+    { key:'bondFaction', label:'羁绊阵营', prop:'羁绊阵营', type:'string', on:true, ph:'忆守庭' },
+    { key:'bondJob1', label:'羁绊职业一', prop:'羁绊职业一', type:'string', on:true },
+    { key:'bondJob2', label:'羁绊职业二', prop:'羁绊职业二', type:'string', on:true },
+    { key:'clash',    label:'基础交锋值', prop:'基础交锋值', type:'float', on:true, ph:'1.0' },
+    { key:'hp',       label:'生命',       prop:'生命',       type:'int',   on:true, ph:'4200' },
+    { key:'def',      label:'防御',       prop:'防御',       type:'int',   on:true, ph:'240' },
+    { key:'atk',      label:'攻击',       prop:'攻击',       type:'int',   on:true, ph:'310' },
+    { key:'spd',      label:'速度',       prop:'速度',       type:'int',   on:true, ph:'102' },
+    { key:'critRate', label:'暴击率',     prop:'暴击率',     type:'float', on:true, ph:'0.15' },
+    { key:'critDmg',  label:'暴伤',       prop:'暴伤',       type:'float', on:true, ph:'1.5' },
+    { key:'effHit',   label:'效果命中',   prop:'效果命中',   type:'float', on:true, ph:'0.30' },
+    { key:'resist',   label:'抵抗',       prop:'抵抗',       type:'float', on:true, ph:'0.20' },
+    { key:'erg',      label:'能量回复效率', prop:'能量回复效率', type:'float', on:true, ph:'1.0' },
+    { key:'emax',     label:'能量上限',   prop:'能量上限',   type:'int',   on:true, ph:'120' },
+    ...SLOT_ORDER.map(k=>({ key:'ref_'+k, label:SLOT_DEF[k].label, prop:SLOT_DEF[k].label, type:'resource', slot:k, on:true, auto:true }))
+  ];
+}
+function skillSchema(sk){
+  if(sk==='passive') return [
+    { key:'name',    label:'被动名称', prop:'被动名称', type:'string', req:true, on:true, ph:'灰烬回燃' },
+    { key:'desc',    label:'描述',     prop:'描述',     type:'text',   on:true, ph:'每次交锋胜利后……' },
+    { key:'trigger', label:'触发时机', prop:'触发时机', type:'enum',   on:true, list:TRIGGER_LIST }
+  ];
+  if(sk==='normal') return [
+    { key:'name', label:'普攻名称', prop:'名称', type:'string', req:true, on:true, ph:'削灯' },
+    { key:'desc', label:'描述',     prop:'描述', type:'text',   on:true, ph:'造成 50% 攻击力的伤害。' },
+    { key:'ratio',label:'伤害倍率', prop:'伤害倍率', type:'float', on:false, ph:'0.5', hint:'普攻伤害固定 50%，此字段默认无效' }
+  ];
+  if(sk==='skill') return [
+    { key:'name', label:'技能名称', prop:'名称',     type:'string', req:true, on:true, ph:'燃灯式' },
+    { key:'desc', label:'描述',     prop:'描述',     type:'text',   on:true },
+    { key:'ratio',label:'伤害倍率', prop:'伤害倍率', type:'float',  req:true, on:true, ph:'1.4' }
+  ];
+  if(sk==='echo') return [
+    { key:'name', label:'回响名称', prop:'名称', type:'string', req:true, on:true, ph:'余火低鸣' },
+    { key:'desc', label:'描述',     prop:'描述', type:'text',   on:true },
+    { key:'ratio',label:'倍率',     prop:'倍率', type:'float',  req:true, on:true, ph:'0.8', hint:'能量与增伤走全局配置' },
+    { key:'hits', label:'段数',     prop:'段数', type:'int',    req:true, on:true, ph:'3' }
+  ];
+  if(sk==='ult') return [
+    { key:'name', label:'终结技名称', prop:'名称', type:'string', req:true, on:true, ph:'焚灯长夜' },
+    { key:'desc', label:'描述',       prop:'描述', type:'text',   on:true },
+    { key:'ratio',label:'倍率',       prop:'倍率', type:'float',  req:true, on:true, ph:'3.2' },
+    { key:'hits', label:'段数',       prop:'段数', type:'int',    req:true, on:true, ph:'1' },
+    { key:'energy',label:'能量消耗',  prop:'能量消耗', type:'int', on:false, ph:'100', hint:'能量默认走全局，需要时再启用' }
+  ];
+  if(sk==='bossUlt') return [
+    { key:'name',    label:'终结技名称', prop:'名称',       type:'string', req:true, on:true, ph:'终末燃灯' },
+    { key:'desc',    label:'描述',       prop:'描述',       type:'text',   on:true },
+    { key:'trigger', label:'触发条件',   prop:'触发条件',   type:'text',   on:true, ph:'血量首次低于 30% 时', hint:'BOSS 终结技不走充能，这里写达成条件' },
+    { key:'effect',  label:'触发后效果', prop:'触发后效果', type:'text',   on:true, ph:'清空全场灼痕，对全体造成伤害并进入二阶段。' },
+    { key:'ratio',   label:'倍率',       prop:'倍率',       type:'float',  req:true, on:true, ph:'3.0' },
+    { key:'hits',    label:'段数',       prop:'段数',       type:'int',    on:true, ph:'1' }
+  ];
+  return [];
+}
+/* 怪物 / BOSS 的卡：机制写在卡上（名称 + 触发条件 + 效果） */
+function mobCardSchema(isBoss){
+  const slots = isBoss ? ['normal','skill','bossSkill','bossUlt'] : ['normal','skill'];
+  return [
+    { key:'id',   label:'唯一编号', prop:'唯一编号', type:'string', req:true, on:true, ph: isBoss?'boss_001':'mob_001', hint:'全项目唯一，建议拼音_序号' },
+    { key:'name', label:'名称',     prop:'名称',     type:'string', req:true, on:true, ph: isBoss?'守灯巨像':'烬噬兽' },
+    { key:'hp',   label:'生命',     prop:'生命',     type:'int',    on:true, ph:'1200' },
+    { key:'atk',  label:'攻击',     prop:'攻击',     type:'int',    on:true, ph:'180' },
+    { key:'def',  label:'防御',     prop:'防御',     type:'int',    on:true, ph:'60' },
+    { key:'spd',  label:'速度',     prop:'速度',     type:'int',    on:true, ph:'90' },
+    { key:'mechName',   label:'机制名称', prop:'机制名称', type:'string', on:true, ph:'亡语', hint:'如 亡语 / 分裂 / 护壁；留空则整组不写' },
+    { key:'mechTrigger',label:'触发条件', prop:'触发条件', type:'string', on:true, ph:'死亡时' },
+    { key:'mechEffect', label:'效果说明', prop:'效果说明', type:'text',   on:true, ph:'死亡时分裂为两个半血个体。' },
+    { key:'mech2Name',   label:'机制二名称', prop:'机制二名称', type:'string', on:true, ph:'（可选）' },
+    { key:'mech2Trigger',label:'机制二触发', prop:'机制二触发', type:'string', on:true, ph:'（可选）' },
+    { key:'mech2Effect', label:'机制二效果', prop:'机制二效果', type:'text',   on:true, ph:'（可选）' }
+  ].concat(slots.map(k=>({ key:'ref_'+k, label:SLOT_DEF[k].label, prop:SLOT_DEF[k].label, type:'resource', slot:k, on:true, auto:true })));
+}
+
+/* ---------- 默认配置 ---------- */
+const STORE_KEY = 'henyu_char_studio_v1';
+function defaultScripts(){
+  const o = { card:{ cls:'角色卡牌数据', path:'res://脚本文件/数据脚本/角色卡牌数据.gd' } };
+  ALL_SLOTS.forEach(k=>{ o[k] = { cls:SLOT_DEF[k].cls, path:SLOT_DEF[k].path }; });
+  o.mobCard  = { cls:'怪物卡牌数据', path:'res://脚本文件/数据脚本/怪物卡牌数据.gd' };
+  o.bossCard = { cls:'Boss卡牌数据',  path:'res://脚本文件/数据脚本/Boss卡牌数据.gd' };
+  return o;
+}
+function defaultSchemas(){
+  return {
+    card: cardSchema(),
+    passive: skillSchema('passive'),
+    normal:  skillSchema('normal'),
+    skill:      skillSchema('skill'),
+    skillPlus:  skillSchema('skill'),
+    skillElite: skillSchema('skill'),
+    echo:    skillSchema('echo'),
+    ult:     skillSchema('ult'),
+    mobCard:  mobCardSchema(false),
+    bossCard: mobCardSchema(true),
+    bossUlt:  skillSchema('bossUlt')
+  };
+}
+function defaultState(){
+  return {
+    project: '痕域',
+    charDir: '资源素材/配置表格/人物卡牌资源',
+    skillDir:'资源素材/配置表格/角色技能资源',
+    mobDir:  '资源素材/配置表格/怪物卡牌资源',
+    mobSkillDir: '资源素材/配置表格/怪物技能资源',
+    bossDir: '资源素材/配置表格/BOSS卡牌资源',
+    bossSkillDir:'资源素材/配置表格/BOSS技能资源',
+    fileWithChar: false,
+    enumAsIndex: false,
+    omitEmpty: true,
+    writeScriptClass: true,
+    withDocs: false,
+    zipWrap: false,
+    v: 3,
+    totalProp: '所有角色',
+    totalAll: false,
+    totalMerge: false,
+    totalExisting: '',
+    existingIds: '',
+    scripts: defaultScripts(),
+    schemas: defaultSchemas(),
+    chars: [],
+    sel: 0,
+    view: 'char',
+    collapsed: false
+  };
+}
+function newEntity(kind){
+  const kd = KIND_DEF[kind] || KIND_DEF.char;
+  const skills = {};
+  kd.slots.forEach(k=>{ skills[k] = {}; });
+  return {
+    uid: 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2,6),
+    kind: kind,
+    card: kind === 'char' ? { cost: 2, fate: '烬残', class: '猎迹者' } : {},
+    skills: skills
+  };
+}
+function hydrate(s){
+  const d = defaultState();
+  if(!s || typeof s !== 'object') return d;
+  const out = Object.assign(d, s);
+  // 旧草稿迁移：早期版本默认套一层文件夹、文件名带角色前缀、附两个说明文本
+  if(!s.v){
+    out.fileWithChar = false;
+    out.zipWrap = false;
+    out.withDocs = false;
+  }
+  out.v = 3;
+  out.scripts = Object.assign(defaultScripts(), s.scripts||{});
+  // 逐个补齐 schema（旧草稿 / 手改过的字段结构都要能对上）
+  const ds = defaultSchemas();
+  out.schemas = out.schemas || {};
+  // 旧草稿里三个战技槽共用一份映射：拆开时沿用已改好的属性名
+  ['skillPlus','skillElite'].forEach(k=>{
+    const src = out.schemas['skill'];
+    if(Array.isArray(src) && src.length && (!Array.isArray(out.schemas[k]) || !out.schemas[k].length)){
+      out.schemas[k] = JSON.parse(JSON.stringify(src));
+    }
+  });
+  for(const k in ds){
+    const cur = out.schemas[k];
+    if(!Array.isArray(cur) || !cur.length){ out.schemas[k] = ds[k]; continue; }
+    cur.forEach(f=>{ if(f && typeof f.on !== 'boolean') f.on = true; if(f && !f.prop) f.prop = f.label; });
+    // 缺字段就补上（按 key 对齐，保留用户改过的属性名）
+    ds[k].forEach(df=>{ if(!cur.some(f=>f.key===df.key)) cur.push(df); });
+  }
+  out.chars = Array.isArray(out.chars) ? out.chars.filter(c=>c && c.card) : [];
+  out.chars.forEach(c=>{
+    if(!KIND_DEF[c.kind]) c.kind = 'char';
+    c.skills = c.skills || {};
+    KIND_DEF[c.kind].slots.forEach(k=>{ c.skills[k] = c.skills[k] || {}; });
+  });
+  out.sel = Math.min(Math.max(0, out.sel|0), Math.max(0, out.chars.length-1));
+  return out;
+}
+let state = defaultState();
+function save(){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){}
+}
+let saveTimer = null;
+function saveSoon(){ clearTimeout(saveTimer); saveTimer = setTimeout(save, 400); }
+
+/* ============================================================
+   一、.tres 文本生成
+   ============================================================ */
+function qs(s){
+  return '"' + String(s)
+    .replace(/\\/g,'\\\\')
+    .replace(/"/g,'\\"')
+    .replace(/\r\n|\r|\n/g,'\\n')
+    .replace(/\t/g,'\\t') + '"';
+}
+function numStr(v, mode){
+  const n = Number(v);
+  if(!isFinite(n)) return mode==='int' ? '0' : '0.0';
+  if(mode==='int') return String(Math.round(n));
+  return Number.isInteger(n) ? n + '.0' : String(n);
+}
+function safeName(s){
+  let t = String(s||'').trim().replace(/[\\/:*?"<>|\r\n\t]/g,'_').replace(/\s+/g,'');
+  return t.slice(0,40) || '未命名角色';
+}
+function formatValue(f, v){
+  switch(f.type){
+    case 'int':   return numStr(v,'int');
+    case 'float': return numStr(v,'float');
+    case 'bool':  return (v==='true'||v==='1'||v===true) ? 'true' : 'false';
+    case 'enum': {
+      if(state.enumAsIndex && Array.isArray(f.list) && f.list.length){
+        const i = f.list.indexOf(String(v));
+        if(i >= 0) return String(i);
+      }
+      return qs(v);
+    }
+    default: return qs(v);
+  }
+}
+function collectProps(schema, obj, refs){
+  const out = [];
+  for(const f of schema){
+    if(!f.on) continue;
+    if(f.type === 'resource'){
+      const r = (refs||[]).find(x=>x.slot===f.slot);
+      if(r) out.push([f.prop, 'ExtResource("' + r.id + '")']);
+      continue;
+    }
+    const raw = obj[f.key];
+    const sv = (raw===undefined || raw===null) ? '' : String(raw).trim();
+    if(sv === ''){
+      if(!f.req && state.omitEmpty !== false) continue;
+      if(f.type==='string'||f.type==='text'||f.type==='enum') out.push([f.prop, qs('')]);
+      else out.push([f.prop, f.type==='int' ? '0' : '0.0']);
+      continue;
+    }
+    out.push([f.prop, formatValue(f, sv)]);
+  }
+  return out;
+}
+function buildFile(opts){
+  const cls = state.writeScriptClass === false ? '' : (opts.cls||'').trim();
+  const path = (opts.path||'').trim();
+  const exts = [];
+  if(path) exts.push({type:'Script', path:path, id:'1_script'});
+  (opts.refs||[]).forEach(r=>exts.push({type:'Resource', path:r.path, id:r.id}));
+  const load = exts.length + 1;
+  const head = cls
+    ? '[gd_resource type="Resource" script_class="' + cls + '" load_steps=' + load + ' format=3]'
+    : '[gd_resource type="Resource" load_steps=' + load + ' format=3]';
+  const lines = [head, ''];
+  exts.forEach(e=>lines.push('[ext_resource type="' + e.type + '" path="' + e.path + '" id="' + e.id + '"]'));
+  if(exts.length) lines.push('');
+  lines.push('[resource]');
+  if(path) lines.push('script = ExtResource("1_script")');
+  (opts.props||[]).forEach(p=>lines.push(p[0] + ' = ' + p[1]));
+  return lines.join('\n') + '\n';
+}
+function slotFileName(cn, slotKey){
+  const d = SLOT_DEF[slotKey];
+  return (state.fileWithChar ? cn + '_' : '') + d.label + '.tres';
+}
+
+/* 生成单个实体的全部文件：1 张卡 + 对应槽位的技能资源 */
+function buildEntityFiles(ch){
+  const kd = KIND_DEF[ch.kind] || KIND_DEF.char;
+  const nm = String(ch.card.name||'').trim();
+  const cn = nm ? safeName(nm) : ('未命名_' + String(ch.uid||'0000').slice(-4));
+  const sdir = (state[kd.skillDir] || state.skillDir) + '/' + cn;
+  const refs = [];
+  const files = [];
+
+  kd.slots.forEach(slotKey=>{
+    const d = SLOT_DEF[slotKey];
+    const sc = state.schemas[d.sk] || [];
+    const obj = ch.skills[slotKey] || {};
+    const s = state.scripts[slotKey] || { cls:d.cls, path:d.path };
+    const fn = slotFileName(cn, slotKey);
+    const resPath = 'res://' + sdir + '/' + fn;
+    files.push({
+      path: sdir + '/' + fn,
+      text: buildFile({ cls:s.cls, path:s.path, refs:[], props: collectProps(sc, obj, []) }),
+      kind: 'skill', slot: slotKey
+    });
+    refs.push({ id: '2_' + slotKey.toLowerCase(), path: resPath, slot: slotKey });
+  });
+
+  const c = state.scripts[kd.cardScript] || { cls:'', path:'' };
+  const cardFile = cn + '.tres';
+  const cardRel = (state[kd.cardDir] || state.charDir) + '/' + cardFile;
+  const cardPath = 'res://' + cardRel;
+  files.unshift({
+    path: cardRel,
+    text: buildFile({ cls:c.cls, path:c.path, refs:refs, props: collectProps(state.schemas[kd.cardSk], ch.card, refs) }),
+    kind: 'card'
+  });
+  return { files: files, cardPath: cardPath, cn: cn, kind: ch.kind };
+}
+function buildCharFiles(ch){ return buildEntityFiles(ch); }
+
+/* 全项目的文件清单（含总表 / 说明） */
+function buildAll(){
+  if(!state.chars.length) return { files: [], cards: [], chars: [] };
+  const all = [];
+  const cards = [];
+  const chars = [];
+  const byKind = { char: [], mob: [], boss: [] };
+  state.chars.forEach((ch, i)=>{
+    const built = buildEntityFiles(ch);
+    all.push.apply(all, built.files);
+    const item = { path: built.cardPath, name: safeName(ch.card.name), files: built.files, kind: ch.kind };
+    if(state.totalAll || ch.kind === 'char') cards.push(item);
+    byKind[ch.kind || 'char'].push(item);
+    chars.push(built);
+  });
+
+  // 设定速查（始终随包）
+  all.push({ path: '设定一览.txt', text: settingsText(), kind:'doc' });
+
+  const snippet = totalSnippet(cards);
+  if(state.withDocs) all.push({ path: '角色总配置表_追加片段.txt', text: snippet, kind:'doc' });
+
+  if(state.totalMerge && state.totalExisting.trim()){
+    try{
+      const merged = mergeTotal(state.totalExisting, cards);
+      all.push({ path: '角色总配置表.tres', text: merged.text, kind:'doc' });
+    }catch(err){
+      all.push({ path: '角色总配置表_合并失败.txt', text: '合并失败：' + err.message + '\n', kind:'doc' });
+    }
+  }
+  if(state.withDocs) all.push({ path: '导入说明.txt', text: readmeText(cards), kind:'doc' });
+  return { files: all, cards: cards, chars: chars, byKind: byKind };
+}
+
+/* ============================================================
+   设定速查（.txt，给人看的）
+   ============================================================ */
+function vlen(s){
+  const str = String(s); let n = 0;
+  for(let i=0;i<str.length;i++) n += str.charCodeAt(i) > 255 ? 2 : 1;
+  return n;
+}
+function wrapBlock(text, max, indent){
+  const out = [];
+  String(text||'').split(/\r?\n/).forEach(para=>{
+    const arr = Array.from(para);
+    let cur = '';
+    for(let i=0;i<arr.length;i++){
+      const c = arr[i];
+      const keep = /[，。、；：！？）」』】》%…·]/.test(c) || (/\d/.test(c) && /\d/.test(cur.slice(-1)));
+      if(cur && !keep && vlen(cur) + vlen(c) > max){ out.push(indent + cur.replace(/\s+$/, '')); cur = ''; }
+      cur += c;
+    }
+    out.push(indent + cur.replace(/\s+$/, ''));
+  });
+  return out;
+}
+function schField(group, key){ return (state.schemas[group]||[]).find(f=>f.key===key); }
+function schLabel(group, key, fallback){
+  const f = schField(group, key);
+  return f ? f.label : (fallback || key);
+}
+function kvValue(group, obj, key){
+  const f = schField(group, key);
+  if(f && f.on === false) return '';
+  const raw = obj[key];
+  const s = (raw===undefined || raw===null) ? '' : String(raw).trim();
+  if(!s) return '';
+  const label = f ? f.label : key;
+  if(/率|暴伤|效率|命中|抵抗|抗性/.test(label)){
+    const n = Number(s);
+    if(isFinite(n) && n > 0 && n <= 2) return s + '（' + (Math.round(n * 1000) / 10) + '%）';
+  }
+  return s;
+}
+function kv(group, obj, key){
+  const v = kvValue(group, obj, key);
+  if(!v) return '';
+  return schLabel(group, key) + ' ' + v;
+}
+
+function settingsText(only){
+  const t = [];
+  const W = 46;
+  const push = s => t.push(s);
+  const rule = ch => push(String(ch).repeat(W));
+  const chars = only || state.chars;
+  const counts = { char:0, mob:0, boss:0 };
+  chars.forEach(c=>{ counts[c.kind || 'char']++; });
+
+  push('痕域 · 设定一览');
+  rule('═');
+  push('项目：' + (state.project || '痕域') + '    导出：' + new Date().toLocaleString('zh-CN'));
+  push('角色 ' + counts.char + ' 个　怪物 ' + counts.mob + ' 个　BOSS ' + counts.boss + ' 个');
+  push('本文件只作速查，实际生效值以同名 .tres 为准');
+  push('');
+
+  const seq = { char:0, mob:0, boss:0 };
+  chars.forEach(ch=>{
+    const kind = ch.kind || 'char';
+    const kd = KIND_DEF[kind];
+    const card = ch.card || {};
+    const sk = kd.cardSk;
+    seq[kind]++;
+    const nm = String(card.name || '').trim() || ('未命名' + kd.one);
+    push('【' + kd.label + ' ' + seq[kind] + '】' + nm + '　' + (String(card.id || '').trim() || '（无编号）'));
+    rule('─');
+
+    if(kind === 'char'){
+      const idLine = [kv('card', card, 'fate'), kv('card', card, 'class'), kv('card', card, 'cost')].filter(Boolean).join('　');
+      if(idLine) push('  ' + idLine);
+      const bond = ['bondFaction','bondJob1','bondJob2']
+        .map(k=>kvValue('card', card, k)).filter(Boolean);
+      if(bond.length) push('  羁绊：' + bond.join(' / '));
+      const rows = [
+        ['clash','hp','def'],
+        ['atk','spd'],
+        ['critRate','critDmg','effHit','resist'],
+        ['erg','emax']
+      ].map(keys => keys.map(k=>kv('card', card, k)).filter(Boolean).join('　')).filter(Boolean);
+      if(rows.length){
+        push('');
+        push('  数值');
+        rows.forEach(r=>push('    ' + r));
+      }
+    }else{
+      const nums = ['hp','atk','def','spd'].map(k=>kv(sk, card, k)).filter(Boolean).join('　');
+      if(nums){
+        push('');
+        push('  数值');
+        push('    ' + nums);
+      }
+      [['mechName','mechTrigger','mechEffect'], ['mech2Name','mech2Trigger','mech2Effect']].forEach((keys, gi)=>{
+        const label = kvValue(sk, card, keys[0]);
+        if(!label) return;
+        push('');
+        push('  独特机制' + (gi === 0 ? '' : '二') + ' · ' + label);
+        const trig = kvValue(sk, card, keys[1]);
+        if(trig) push('    触发条件：' + trig);
+        const eff = String(card[keys[2]] || '').trim();
+        if(eff) wrapBlock(eff, 42, '    ').forEach(l=>push(l));
+      });
+    }
+
+    // 技能
+    push('');
+    push('  技能');
+    kd.slots.forEach(slotKey=>{
+      const d = SLOT_DEF[slotKey];
+      const obj = ch.skills[slotKey] || {};
+      const sname = String(obj.name || '').trim() || '（未填）';
+      const bits = [];
+      const ratio = kvValue(d.sk, obj, 'ratio');
+      const hits = kvValue(d.sk, obj, 'hits');
+      if(ratio) bits.push('倍率 ' + ratio);
+      if(hits) bits.push('段数 ' + hits);
+      if(slotKey === 'normal') bits.push('伤害固定 50%');
+      push('    [' + d.label + '] ' + sname + (bits.length ? '　' + bits.join('　') : ''));
+      if(slotKey === 'bossUlt'){
+        const desc = String(obj.desc || '').trim();
+        if(desc) wrapBlock(desc, 42, '      ').forEach(l=>push(l));
+        const trig = String(obj.trigger || '').trim();
+        if(trig){
+          push('      触发条件：');
+          wrapBlock(trig, 40, '        ').forEach(l=>push(l));
+        }
+        const eff = String(obj.effect || '').trim();
+        if(eff){
+          push('      触发后效果：');
+          wrapBlock(eff, 40, '        ').forEach(l=>push(l));
+        }
+        return;
+      }
+      const trig = kvValue(d.sk, obj, 'trigger');
+      if(trig) push('      触发时机：' + trig);
+      const desc = String(obj.desc || '').trim();
+      if(desc) wrapBlock(desc, 42, '      ').forEach(l=>push(l));
+    });
+
+    // 文件位置
+    push('');
+    push('  文件');
+    const cn = String(card.name||'').trim() ? safeName(card.name) : ('未命名_' + String(ch.uid||'0000').slice(-4));
+    const prefix = state.fileWithChar ? cn + '_' : '';
+    push('    ' + kd.one + '卡：res://' + (state[kd.cardDir] || '') + '/' + cn + '.tres');
+    push('    技能：res://' + (state[kd.skillDir] || '') + '/' + cn + '/（' + kd.slots.map(k=>prefix + SLOT_DEF[k].label).join(' / ') + '）.tres');
+
+    // 其余自定义字段
+    const covered = ['id','name','cost','fate','class','bondFaction','bondJob1','bondJob2',
+      'clash','hp','def','atk','spd','critRate','critDmg','effHit','resist','erg','emax',
+      'mechName','mechTrigger','mechEffect','mech2Name','mech2Trigger','mech2Effect'];
+    const rest = (state.schemas[sk]||[])
+      .filter(f=>f.type !== 'resource' && !f.auto && !covered.includes(f.key))
+      .map(f=>kv(sk, card, f.key)).filter(Boolean);
+    if(rest.length){
+      push('');
+      push('  其他');
+      push('    ' + rest.join('　'));
+    }
+    push('');
+  });
+
+  // 全局
+  push('附：全局配置');
+  rule('─');
+  if(counts.char){
+    push('  命途枚举：' + FATE_LIST.join(' / ') + '（共 ' + FATE_LIST.length + ' 项' + (state.enumAsIndex ? '，按序号写入' : '，按文本写入') + '）');
+    push('  职业列表：' + CLASS_LIST.join(' / '));
+  }
+  push('  角色卡目录：' + state.charDir);
+  push('  角色技能目录：' + state.skillDir);
+  push('  怪物卡目录：' + state.mobDir);
+  push('  怪物技能目录：' + state.mobSkillDir);
+  push('  BOSS卡目录：' + state.bossDir);
+  push('  BOSS技能目录：' + state.bossSkillDir);
+  if(counts.char) push('  总表数组属性：' + (state.totalProp || '所有角色') + '（角色总配置表内）');
+  push('  打包选项：文件名' + (state.fileWithChar ? '带' : '不带') + '前缀 / '
+    + (state.zipWrap ? '套' : '不套') + '外层文件夹 / readme 说明文本' + (state.withDocs ? '附带' : '不带')
+    + '（本速查文件始终随包）');
+  return t.join('\n') + '\n';
+}
+
+function readmeText(cards){
+  const t = [];
+  t.push('痕域 · 配置包（' + cards.length + ' 张卡进总表）');
+  t.push('项目：' + (state.project||'痕域') + '　生成：' + new Date().toLocaleString('zh-CN'));
+  t.push('');
+  t.push('1) 解压：把包里的 资源素材 文件夹直接解压到 Godot 项目根，覆盖同名目录。');
+  t.push('   角色卡 → ' + state.charDir + '/　　怪物卡 → ' + state.mobDir + '/　　BOSS卡 → ' + state.bossDir + '/');
+  t.push('   技能   → ' + state.skillDir + ' / ' + state.mobSkillDir + ' / ' + state.bossSkillDir + ' 下的 <名称>/');
+  t.push('2) 登记总表：见 角色总配置表_追加片段.txt 的①②③，或在「总配置表」页整份合并。');
+  t.push('3) 重开项目，图鉴 / 商店 / 羁绊 / 战斗出现新单位。');
+  t.push('4) 设定速查见 设定一览.txt（角色 / 怪物 / BOSS 的数值、机制与技能，纯文本）。');
+  t.push('');
+  t.push('注意：别跑 脚本文件/工具脚本/合并角色配置表.gd —— 它会扫整个 人物卡牌资源 目录（含怪物卡），');
+  t.push('      还会把 羁绊配置表.tres 覆盖成空模板。');
+  t.push('若报「找不到属性」，说明属性名与 .gd 不一致：回「字段映射」核对，或用「导入参考 .tres」反推。');
+  return t.join('\n') + '\n';
+}
+
+/* 追加片段（不覆盖原文件的安全做法） */
+function totalSnippet(cards, title){
+  const t = [];
+  const dir = state.charDir.replace(/[^\/]+$/, '');
+  const prop = state.totalProp || '所有角色';
+  t.push(title || ('# ' + dir + '角色总配置表.tres'));
+  t.push('# ① [ext_resource] 段末尾贴下面每组的第 1 行');
+  t.push('# ② ' + prop + ' 数组末尾贴第 2 行（保留逗号）');
+  t.push('# ③ load_steps 加 ' + cards.length);
+  t.push('');
+  cards.forEach((c, i)=>{
+    const id = '2_' + shortId(c.path);
+    t.push('# ' + (c.name || ('角色' + (i+1))));
+    t.push('[ext_resource type="Resource" path="' + c.path + '" id="' + id + '"]');
+    t.push('ExtResource("' + id + '"),');
+    if(i < cards.length - 1) t.push('');
+  });
+  return t.join('\n') + '\n';
+}
+function shortId(str){
+  let h = 0;
+  for(let i=0;i<str.length;i++){ h = (h*31 + str.charCodeAt(i)) >>> 0; }
+  return ('000000' + h.toString(36)).slice(-6);
+}
+
+/* ============================================================
+   二、总配置表合并（文本手术，尽量不动用户原有内容）
+   ============================================================ */
+function mergeTotal(text, cards){
+  let src = String(text||'').replace(/\r\n/g,'\n');
+  if(!/\[gd_resource/.test(src)) throw new Error('缺少 [gd_resource] 文件头，确认粘贴的是 .tres 原文');
+  const warns = [];
+  const lines = src.split('\n');
+
+  let lastExt = -1, firstSub = -1, firstRes = -1;
+  lines.forEach((l,i)=>{
+    if(/^\[ext_resource/.test(l)) lastExt = i;
+    if(/^\[sub_resource/.test(l) && firstSub < 0) firstSub = i;
+    if(/^\[resource\]/.test(l) && firstRes < 0) firstRes = i;
+  });
+  if(firstRes < 0) throw new Error('找不到 [resource] 段');
+
+  // 现有 ext id 的编号，避免撞号
+  let maxN = 0;
+  (src.match(/^\[ext_resource[\s\S]*?id="([0-9]+)_/gm) || []).forEach(m=>{
+    const n = parseInt(m.replace(/[\s\S]*id="([0-9]+)_/,'$1'), 10);
+    if(isFinite(n) && n > maxN) maxN = n;
+  });
+  const existingPaths = new Set((src.match(/^\[ext_resource[^\n]*path="([^"]+)"/gm)||[])
+    .map(l=>l.replace(/[\s\S]*path="([^"]+)"/,'$1')));
+
+  const add = [];
+  cards.forEach(c=>{
+    if(existingPaths.has(c.path)){ warns.push('总表已包含，跳过：' + c.path); return; }
+    add.push(c);
+  });
+
+  if(add.length){
+    const baseN = Math.max(maxN + 1, 2);
+    const extLines = add.map((c,i)=>'[ext_resource type="Resource" path="' + c.path + '" id="' + (baseN + i) + '_' + shortId(c.path) + '"]');
+    const at = lastExt >= 0 ? lastExt + 1 : (firstSub >= 0 ? firstSub : firstRes);
+    lines.splice(at, 0, ...extLines);
+
+    // 重新定位 [resource]（上面可能插入了行）
+    let resIdx = -1;
+    lines.forEach((l,i)=>{ if(/^\[resource\]/.test(l) && resIdx < 0) resIdx = i; });
+    const propName = state.totalProp || '所有角色';
+    let propIdx = -1;
+    for(let i=resIdx;i<lines.length;i++){
+      if(lines[i].indexOf(propName) === 0 && lines[i].indexOf('=') > 0){ propIdx = i; break; }
+      if(i > resIdx && /^\[/.test(lines[i])) break;
+    }
+    if(propIdx < 0) throw new Error('在 [resource] 段里找不到属性 ' + propName);
+
+    const head = lines.slice(0, propIdx).join('\n');
+    const restAll = lines.slice(propIdx).join('\n');
+    const eq = restAll.indexOf('=');
+    let pos = eq;
+    if(/Array\[/.test(restAll.slice(eq, eq + 40))){ pos = restAll.indexOf(']', eq) + 1; }
+    const lb = restAll.indexOf('[', pos);
+    if(lb < 0) throw new Error('属性 ' + propName + ' 的值不是数组，无法追加');
+    let depth = 0, end = -1;
+    for(let i=lb;i<restAll.length;i++){
+      if(restAll[i] === '[') depth++;
+      else if(restAll[i] === ']'){ depth--; if(depth === 0){ end = i; break; } }
+    }
+    if(end < 0) throw new Error('数组没有闭合，文本可能不完整');
+
+    const tag = [];
+    add.forEach((c,i)=>{
+      tag.push('ExtResource("' + (baseN + i) + '_' + shortId(c.path) + '")');
+    });
+    const inner = restAll.slice(lb + 1, end).replace(/\s+$/,'');
+    const newInner = inner
+      ? inner + ',\n' + tag.join(',\n') + '\n'
+      : '\n' + tag.join(',\n') + '\n';
+    const tail = restAll.slice(end + 1);
+    src = head + '\n' + restAll.slice(0, lb + 1) + newInner + ']' + tail;
+    if(src[src.length-1] !== '\n') src += '\n';
+  }
+
+  // 修 load_steps
+  const extCount = (src.match(/^\[ext_resource/gm)||[]).length;
+  const subCount = (src.match(/^\[sub_resource/gm)||[]).length;
+  const load = extCount + subCount + 1;
+  if(/load_steps=\d+/.test(src)){
+    src = src.replace(/load_steps=\d+/, 'load_steps=' + load);
+  }else{
+    src = src.replace('[gd_resource', '[gd_resource load_steps=' + load);
+  }
+  return { text: src, warns: warns, added: add.map(c=>c.path) };
+}
+
+/* ============================================================
+   三、校验
+   ============================================================ */
+function validateAll(){
+  const issues = [];
+  const push = (lv, msg, who)=>{ issues.push({ lv: lv, msg: msg, who: who||'' }); };
+  const ids = {};
+  const cardPaths = {};
+  const extra = (state.existingIds||'').split(/[\s,，、;；]+/).filter(Boolean);
+
+  state.chars.forEach((ch, i)=>{
+    const kind = ch.kind || 'char';
+    const kd = KIND_DEF[kind];
+    const who = (ch.card.name || ('第 ' + (i+1) + ' 个' + kd.one));
+    const id = String(ch.card.id||'').trim();
+    const cpath = (state[kd.cardDir] || '') + '/' + safeName(ch.card.name) + '.tres';
+    if(cardPaths[cpath]) push('err', kd.label + '名称重复，生成路径会互相覆盖：' + cpath, who);
+    else cardPaths[cpath] = true;
+    if(!ch.card.name || !String(ch.card.name).trim()) push('err','名称未填', who);
+    if(!id) push('err','唯一编号未填', who);
+    else if(/[\/\\\s]/.test(id)) push('err','唯一编号不能含空格或斜杠：' + id, who);
+    else if(ids[id]) push('err','唯一编号重复：' + id, who);
+    else { ids[id] = true; if(extra.indexOf(id) >= 0) push('warn','该编号已存在于「已有编号」清单：' + id, who); }
+
+    if(kind === 'char'){
+      const cost = Number(ch.card.cost);
+      if(!isFinite(cost) || cost < 1 || cost > 5) push('err','购买费用必须是 1–5（当前：' + (ch.card.cost||'空') + '）', who);
+      if(!String(ch.card.fate||'').trim()) push('err','命途未选', who);
+      if(!String(ch.card.class||'').trim()) push('err','职业未选', who);
+    }
+
+    const kdSchema = state.schemas[kd.cardSk] || [];
+    ['hp','atk','def','spd'].forEach(k=>{
+      const f = kdSchema.find(x=>x.key===k);
+      if(f && f.on && String(ch.card[k]||'').trim()==='') push('warn','数值留空：' + f.label, who);
+    });
+    // 机制写了名称却没写效果
+    if(kind !== 'char'){
+      [['mechName','mechEffect'],['mech2Name','mech2Effect']].forEach(([kn,ke])=>{
+        if(String(ch.card[kn]||'').trim() && !String(ch.card[ke]||'').trim())
+          push('warn','机制「' + ch.card[kn] + '」没写效果说明', who);
+      });
+    }
+
+    kd.slots.forEach(k=>{
+      const d = SLOT_DEF[k];
+      const sc = state.schemas[d.sk] || [];
+      const obj = ch.skills[k] || {};
+      // 必填项统一检查（名称、倍率、段数…）
+      sc.forEach(f=>{
+        if(f.on && f.req && f.type !== 'resource' && String(obj[f.key]===undefined?'':obj[f.key]).trim()===''){
+          push('err', d.label + '的「' + f.label + '」未填', who);
+        }
+      });
+      const rf = sc.find(f=>f.key==='ratio');
+      if(rf && rf.on && String(obj.ratio||'').trim()!==''){
+        const n = Number(obj.ratio);
+        if(!isFinite(n) || n <= 0) push('warn', d.label + '倍率不合法：' + obj.ratio, who);
+      }
+      const hf = sc.find(f=>f.key==='hits');
+      if(hf && hf.on && String(obj.hits||'').trim()!==''){
+        const n = Number(obj.hits);
+        if(!isFinite(n) || n < 1) push('err', d.label + '段数需 ≥ 1', who);
+      }
+      // 属性名重复
+      const props = collectProps(sc, obj, []);
+      const seen = {};
+      props.forEach(p=>{ if(seen[p[0]]) push('err', d.label + ' 属性名重复：' + p[0] + '（字段映射里改名）', who); seen[p[0]] = true; });
+      if(sc.some(f=>f.on && !String(f.prop||'').trim())) push('err', d.label + ' 有字段属性名为空', who);
+    });
+
+    const cp = collectProps(kdSchema, ch.card, []);
+    const cseen = {};
+    cp.forEach(p=>{ if(cseen[p[0]]) push('err', kd.one + '卡属性名重复：' + p[0], who); cseen[p[0]] = true; });
+  });
+
+  // 脚本路径
+  const sp = state.scripts;
+  Object.keys(sp).forEach(k=>{
+    const p = String(sp[k].path||'').trim();
+    const label = k==='card' ? '角色卡' : (k==='mobCard' ? '怪物卡' : (k==='bossCard' ? 'BOSS卡' : SLOT_DEF[k].label));
+    if(!p) push('err', label + '的脚本路径为空', '');
+    else if(!/^res:\/\//.test(p)) push('warn', label + ' 脚本路径应以 res:// 开头', '');
+    else if(!/\.gd$/.test(p)) push('warn', label + ' 脚本路径不是 .gd', '');
+    if(!String(sp[k].cls||'').trim()) push('warn', label + ' 的 script_class 为空（生成的资源在编辑器里会显示为普通 Resource）', '');
+  });
+
+  if(state.totalMerge){
+    if(!state.totalExisting.trim()) push('warn','已开启总表合并，但没粘贴现有总配置表内容','');
+    else {
+      try{
+        const r = mergeTotal(state.totalExisting, buildAll().cards);
+        r.warns.forEach(w=>push('warn', w, ''));
+        if(!r.added.length) push('warn','所有角色都已在总表里，合并后没有新增','');
+      }catch(err){ push('err','总表合并失败：' + err.message, ''); }
+    }
+  }
+  return issues;
+}
+
+/* ============================================================
+   四、ZIP（store 模式，无第三方库）
+   ============================================================ */
+const CRC_TABLE = (function(){
+  const t = new Uint32Array(256);
+  for(let n=0;n<256;n++){
+    let c = n;
+    for(let k=0;k<8;k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    t[n] = c >>> 0;
+  }
+  return t;
+})();
+function crc32(u8){
+  let c = 0xFFFFFFFF;
+  for(let i=0;i<u8.length;i++) c = CRC_TABLE[(c ^ u8[i]) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+function makeZip(files, rootName){
+  const enc = new TextEncoder();
+  const parts = [], central = [];
+  let offset = 0;
+  const now = new Date();
+  const dosT = ((now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1)) & 0xFFFF;
+  const dosD = (((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate()) & 0xFFFF;
+  const list = rootName ? files.map(f=>({ path: rootName + '/' + f.path, text: f.text })) : files;
+  list.forEach(f=>{
+    const data = enc.encode(f.text);
+    const nb = enc.encode(f.path);
+    const crc = crc32(data);
+    const lh = new Uint8Array(30 + nb.length);
+    const dv = new DataView(lh.buffer);
+    dv.setUint32(0, 0x04034b50, true);
+    dv.setUint16(4, 20, true);
+    dv.setUint16(6, 0x0800, true);      // UTF-8 文件名
+    dv.setUint16(8, 0, true);           // store
+    dv.setUint16(10, dosT, true);
+    dv.setUint16(12, dosD, true);
+    dv.setUint32(14, crc, true);
+    dv.setUint32(18, data.length, true);
+    dv.setUint32(22, data.length, true);
+    dv.setUint16(26, nb.length, true);
+    dv.setUint16(28, 0, true);
+    lh.set(nb, 30);
+    parts.push(lh, data);
+    central.push({ nb: nb, crc: crc, size: data.length, off: offset });
+    offset += lh.length + data.length;
+  });
+  let cdLen = 0;
+  const cd = [];
+  central.forEach(c=>{
+    const b = new Uint8Array(46 + c.nb.length);
+    const dv = new DataView(b.buffer);
+    dv.setUint32(0, 0x02014b50, true);
+    dv.setUint16(4, 20, true);
+    dv.setUint16(6, 20, true);
+    dv.setUint16(8, 0x0800, true);
+    dv.setUint16(10, 0, true);
+    dv.setUint16(12, dosT, true);
+    dv.setUint16(14, dosD, true);
+    dv.setUint32(16, c.crc, true);
+    dv.setUint32(20, c.size, true);
+    dv.setUint32(24, c.size, true);
+    dv.setUint16(28, c.nb.length, true);
+    dv.setUint16(30, 0, true);
+    dv.setUint16(32, 0, true);
+    dv.setUint16(34, 0, true);
+    dv.setUint16(36, 0, true);
+    dv.setUint32(38, 0, true);
+    dv.setUint32(42, c.off, true);
+    b.set(c.nb, 46);
+    cd.push(b);
+    cdLen += b.length;
+  });
+  const eocd = new Uint8Array(22);
+  const dv = new DataView(eocd.buffer);
+  dv.setUint32(0, 0x06054b50, true);
+  dv.setUint16(4, 0, true);
+  dv.setUint16(6, 0, true);
+  dv.setUint16(8, central.length, true);
+  dv.setUint16(10, central.length, true);
+  dv.setUint32(12, cdLen, true);
+  dv.setUint32(16, offset, true);
+  dv.setUint16(20, 0, true);
+  return new Blob(parts.concat(cd, [eocd]), { type: 'application/zip' });
+}
+
+/* ============================================================
+   五、视图
+   ============================================================ */
+const $ = s => document.querySelector(s);
+function esc(s){
+  return String(s===undefined||s===null?'':s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+const ICON = {
+  char:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c1.2-3.6 3.6-5.4 7-5.4s5.8 1.8 7 5.4"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>',
+  map:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h6M14 6h6M4 12h10M18 12h2M4 18h3M11 18h9"/><circle cx="12" cy="6" r="1.4"/><circle cx="16" cy="12" r="1.4"/><circle cx="9" cy="18" r="1.4"/></svg>',
+  link:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 13a4 4 0 006 0l1.5-1.5A4 4 0 0011 5.5L9.8 6.7M14 11a4 4 0 00-6 0L6.5 12.5A4 4 0 0013 18.5L14.2 17.3"/></svg>',
+  list:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.5M3.5 12h.5M3.5 18h.5"/></svg>',
+  book:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 5.5A1.5 1.5 0 016.5 4H19v16H6.5A1.5 1.5 0 015 18.5z"/><path d="M5 18.5A1.5 1.5 0 016.5 17H19"/></svg>',
+  folder:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3.5 7.5h6l2 2h9v9h-17z"/></svg>',
+  file:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/></svg>',
+  copy:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="8" y="8" width="12" height="12"/><path d="M16 8V5a1 1 0 00-1-1H5a1 1 0 00-1 1v10a1 1 0 001 1h3"/></svg>',
+  save:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v6h8V4M8 20v-6h8v6"/></svg>',
+  trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12.5l5 5L20 6.5"/></svg>',
+  warn:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 4l8 15H4z"/><path d="M12 10v4M12 16.6v.2"/></svg>'
+};
+
+const MOB_SECTIONS = [
+  { idx:'01', t:'身份与数值', hint:'编号唯一；生命 / 攻击 / 防御 / 速度', keys:['id','name','hp','atk','def','spd'], cols:'grid3' }
+];
+const SECTIONS = {
+  char: [
+    { idx:'01', t:'身份与商店', hint:'唯一编号 / 名称 / 费用 1–5 / 命途 / 职业', keys:['id','name','cost','fate','class'], cols:'grid3' },
+    { idx:'02', t:'羁绊', hint:'阵营与两个职业标签，进羁绊配置表取用', keys:['bondFaction','bondJob1','bondJob2'], cols:'grid3' },
+    { idx:'03', t:'战斗数值', hint:'基础交锋值、生命、防御、攻击、速度', keys:['clash','hp','def','atk','spd'], cols:'grid3' },
+    { idx:'04', t:'判定与能量', hint:'暴击率/暴伤填小数（0.15 = 15%）', keys:['critRate','critDmg','effHit','resist','erg','emax'], cols:'grid3' }
+  ],
+  mob: MOB_SECTIONS,
+  boss: MOB_SECTIONS
+};
+const SECTIONS_CHAR = SECTIONS.char;
+
+function fieldHTML(f, obj, prefix){
+  if(f.on === false){
+    return '<div class="fld"><label>' + esc(f.label) + '<span class="ty">停用</span></label>'
+      + '<div class="fh">不写入 .tres，需要时在「字段映射」里启用' + (f.hint ? ' · ' + esc(f.hint) : '') + '</div></div>';
+  }
+  const v = (obj[f.key]===undefined || obj[f.key]===null) ? '' : String(obj[f.key]);
+  const p = prefix + ':' + f.key;
+  const bad = (f.req && v.trim()==='') ? ' bad' : '';
+  let ctl = '';
+  if(f.type === 'enum'){
+    const dl = 'dl_' + Math.random().toString(36).slice(2,8);
+    ctl = '<input type="text" list="' + dl + '" value="' + esc(v) + '" data-path="' + p + '" placeholder="' + esc(f.ph||'') + '" spellcheck="false">'
+        + '<datalist id="' + dl + '">' + (f.list||[]).map(o=>'<option value="' + esc(o) + '">').join('') + '</datalist>';
+  }else if(f.type === 'text'){
+    ctl = '<textarea rows="3" data-path="' + p + '" placeholder="' + esc(f.ph||'') + '">' + esc(v) + '</textarea>';
+  }else if(f.type === 'int' || f.type === 'float'){
+    ctl = '<input type="number" step="' + (f.type==='int'?'1':'any') + '" value="' + esc(v) + '" data-path="' + p + '" placeholder="' + esc(f.ph||'') + '">';
+  }else if(f.type === 'resource'){
+    return '';
+  }else{
+    ctl = '<input type="text" value="' + esc(v) + '" data-path="' + p + '" placeholder="' + esc(f.ph||'') + '" spellcheck="false">';
+  }
+  return '<div class="fld' + bad + '"><label>' + esc(f.label) + (f.req?'<span class="rq">*</span>':'')
+       + '<span class="ty">' + (f.type==='text'?'str':f.type) + '</span></label>' + ctl
+       + (f.hint ? '<span class="fh">' + esc(f.hint) + '</span>' : '') + '</div>';
+}
+function sectionHTML(sec, schema, obj, prefix){
+  const fields = sec.keys.map(k=>schema.find(f=>f.key===k)).filter(Boolean);
+  return '<div class="sec"><div class="sec-hd"><span class="idx">' + sec.idx + '</span><h3>' + sec.t + '</h3>'
+       + '<span class="hint">' + esc(sec.hint) + '</span></div><div class="sec-bd"><div class="' + sec.cols + '">'
+       + fields.map(f=>fieldHTML(f, obj, prefix)).join('') + '</div></div></div>';
+}
+function slotHTML(c, k, i){
+  const d = SLOT_DEF[k];
+  const kd = KIND_DEF[c.kind || 'char'];
+  const sc = state.schemas[d.sk] || [];
+  const obj = c.skills[k] || {};
+  const cn = String(c.card.name||'').trim() ? safeName(c.card.name) : ('未命名_' + String(c.uid||'0000').slice(-4));
+  const rel = (state[kd.skillDir] || state.skillDir) + '/' + cn + '/' + slotFileName(cn, k);
+  const builtin = (obj.name||'').trim();
+  const cls = (state.scripts[k] || {}).cls || d.cls;
+  return '<div class="slot" data-slot="' + k + '">'
+    + '<div class="slot-hd" data-toggle="' + k + '"><span class="nm">' + d.label + '</span>'
+    + '<span class="fl">' + esc(cls) + (builtin ? ' · ' + esc(builtin) : ' · 未命名') + '</span>'
+    + '<span class="chev">▾</span></div>'
+    + '<div class="slot-bd"><div class="grid2">' + sc.map(f=>fieldHTML(f, obj, 'skills:' + k)).join('') + '</div>'
+    + '<div class="fh" style="margin-top:11px" data-rel="' + k + '">res://' + esc(rel) + '</div></div></div>';
+}
+function mechHTML(c, idx, title, base){
+  const sk = KIND_DEF[c.kind || 'char'].cardSk;
+  const sc = state.schemas[sk] || [];
+  const fs = [base, base.replace(/Name$/, 'Trigger'), base.replace(/Name$/, 'Effect')]
+    .map(k=>sc.find(f=>f.key===k)).filter(Boolean);
+  if(!fs.length) return '';
+  const [nameF, trigF, effF] = fs;
+  return '<div class="sec"><div class="sec-hd"><span class="idx">' + idx + '</span><h3>' + title + '</h3>'
+    + '<span class="hint">名称 + 触发条件 + 效果；名称留空则整组不写</span></div>'
+    + '<div class="sec-bd"><div class="grid2">'
+    + (nameF ? fieldHTML(nameF, c.card, 'card') : '') + (trigF ? fieldHTML(trigF, c.card, 'card') : '')
+    + '</div>'
+    + (effF ? '<div style="margin-top:12px">' + fieldHTML(effF, c.card, 'card') + '</div>' : '')
+    + '</div></div>';
+}
+
+/* ---------- nav ---------- */
+function renderNav(){
+  const groups = [['char','角色'],['mob','怪物'],['boss','BOSS']];
+  let html = '';
+  groups.forEach(([kind, label])=>{
+    const kd = KIND_DEF[kind];
+    const items = state.chars.map((c, i)=>({ c:c, i:i })).filter(o=>(o.c.kind || 'char') === kind);
+    html += '<div class="nav-t"><span>' + label + ' (' + items.length + ')</span></div>'
+      + '<div class="nav-new"><button class="btn" data-act="add" data-kind="' + kind + '">' + ICON.plus + ' 新建' + label + '</button></div>';
+    items.forEach(({ c, i })=>{
+      const on = (i === state.sel && state.view === kind) ? ' on' : '';
+      const meta = kind === 'char'
+        ? [c.card.id || '—', c.card.fate || '—', c.card.cost || '—'].join('  ·  ')
+        : [c.card.id || '—', c.card.hp ? '生命 ' + c.card.hp : '', c.card.mechName || ''].filter(Boolean).join('  ·  ');
+      html += '<button class="chip' + on + '" data-sel="' + i + '"><span class="dot"></span><span class="ct">'
+        + '<span class="cn">' + esc(c.card.name || ('未命名' + kd.one)) + '</span>'
+        + '<span class="cm">' + esc(meta || '—') + '</span>'
+        + '</span></button>';
+    });
+  });
+  const item = (view, act, icon, label) =>
+    '<button class="nav-item' + (state.view===view?' on':'') + '" data-view="' + view + '">'
+    + '<span class="ni-i">' + ICON[icon] + '</span>' + label + '</button>';
+
+  $('#nav').innerHTML = html
+    + '<div class="nav-sep"></div>'
+    + '<div class="nav-t"><span>配置</span></div>'
+    + item('schema','','map','字段映射')
+    + item('paths','','link','脚本与路径')
+    + item('total','','list','总配置表')
+    + item('help','','book','流程与说明');
+}
+
+/* ---------- main ---------- */
+function entitySub(c){
+  const kind = c.kind || 'char';
+  if(kind === 'char') return [c.card.id, c.card.fate, c.card.class, c.card.cost ? '费用 ' + c.card.cost : ''].filter(Boolean).join('  ·  ');
+  return [c.card.id, c.card.hp ? '生命 ' + c.card.hp : '', c.card.atk ? '攻击 ' + c.card.atk : '',
+          c.card.spd ? '速度 ' + c.card.spd : '', c.card.mechName || ''].filter(Boolean).join('  ·  ');
+}
+/* 改名后不重渲染整页，只把标题与路径提示就地刷新（不打断输入焦点） */
+function syncLive(){
+  const cur = state.chars[state.sel];
+  if(!cur) return;
+  const kd = KIND_DEF[cur.kind || 'char'];
+  const nm = String(cur.card.name||'').trim();
+  const cn = nm ? safeName(cur.card.name) : ('未命名_' + String(cur.uid||'0000').slice(-4));
+  document.querySelectorAll('[data-rel]').forEach(el=>{
+    const rel = (state[kd.skillDir] || '') + '/' + cn + '/' + slotFileName(cn, el.dataset.rel);
+    el.textContent = el.classList.contains('rp') ? rel : ('res://' + rel);
+  });
+  const nameEl = document.querySelector('[data-head="name"]');
+  if(nameEl) nameEl.textContent = cur.card.name || ('未命名' + kd.one);
+  const subEl = document.querySelector('[data-head="sub"]');
+  if(subEl) subEl.textContent = entitySub(cur) || '尚未填写';
+}
+function entityOf(view){
+  const list = state.chars;
+  let cur = list[state.sel];
+  if(cur && (cur.kind || 'char') === view) return cur;
+  const idx = list.findIndex(c=>(c.kind || 'char') === view);
+  if(idx >= 0){ state.sel = idx; return list[idx]; }
+  return null;
+}
+function renderMain(){
+  const view = state.view;
+  let html = '';
+  if(view === 'char' || view === 'mob' || view === 'boss'){
+    const c = entityOf(view);
+    const kd = KIND_DEF[view];
+    if(!c){ html = emptyHTML(view); } else {
+      const sub = entitySub(c);
+      html = '<div class="vh"><div><h2 data-head="name">' + esc(c.card.name || ('未命名' + kd.one)) + '</h2><p data-head="sub">' + esc(sub || '尚未填写') + '</p></div>'
+        + '<div class="act"><button class="btn" data-act="copy-char">复制' + kd.one + '</button>'
+        + '<button class="btn" data-act="export-one">' + ICON.save + ' 只导出此' + kd.one + '</button>'
+        + '<button class="btn" data-act="del-char">' + ICON.trash + ' 删除</button></div></div>';
+
+      SECTIONS[view].forEach(sec=>{ html += sectionHTML(sec, state.schemas[kd.cardSk], c.card, 'card'); });
+      if(view !== 'char'){
+        html += mechHTML(c, '02', '独特机制', 'mechName');
+        html += mechHTML(c, '03', '独特机制二', 'mech2Name');
+      }
+
+      // 挂槽
+      const refs = kd.slots.map(k=>{
+        const d = SLOT_DEF[k];
+        const cn = String(c.card.name||'').trim() ? safeName(c.card.name) : ('未命名_' + String(c.uid||'0000').slice(-4));
+        const rel = (state[kd.skillDir] || state.skillDir) + '/' + cn + '/' + slotFileName(cn, k);
+        return '<div class="ref"><span class="rl">' + d.label + '</span><span class="rp" data-rel="' + k + '">' + esc(rel) + '</span></div>';
+      }).join('');
+      html += '<div class="sec"><div class="sec-hd"><span class="idx">' + (view === 'char' ? '05' : '04') + '</span><h3>资源挂槽</h3>'
+        + '<span class="hint">自动填入，无需手改</span></div><div class="sec-bd"><div class="refbox">' + refs + '</div></div></div>';
+
+      // 技能
+      html += '<div class="vh" style="margin-top:26px"><div><h2 style="font-size:16px">技能槽位</h2>'
+        + '<p>' + kd.slotHint + '；括号里的类名来自脚本配置</p></div></div>';
+      kd.slots.forEach((k,i)=>{ html += slotHTML(c, k, i); });
+    }
+  }else if(view === 'schema'){
+    html = renderSchemaView();
+  }else if(view === 'paths'){
+    html = renderPathsView();
+  }else if(view === 'total'){
+    html = renderTotalView();
+  }else{
+    html = renderHelpView();
+  }
+  $('#main').innerHTML = html;
+}
+function emptyHTML(view){
+  const v = view || 'char';
+  const kd = KIND_DEF[v];
+  const step = (n, t, d) => '<div class="ref" style="gap:6px;padding:12px">'
+    + '<span class="rl" style="color:var(--acc);font:11px var(--mono);letter-spacing:.1em">' + n + '</span>'
+    + '<span style="font-size:13px;font-weight:600">' + t + '</span>'
+    + '<span style="font-size:11.5px;line-height:1.7;color:var(--dim)">' + d + '</span></div>';
+  const tree = [
+    '资源素材/配置表格/',
+    '├─ 人物卡牌资源/角色名.tres          ← 角色卡（挂 7 个引用）',
+    '├─ 角色技能资源/角色名/               ← 被动 / 普攻 / 战技 / 强化战技 / 精英战技 / 回响 / 终结技',
+    '├─ 怪物卡牌资源/怪物名.tres          ← 怪物卡（机制写在卡上，挂 2 个引用）',
+    '├─ 怪物技能资源/怪物名/               ← 普攻 / 战技',
+    '├─ BOSS卡牌资源/BOSS名.tres          ← BOSS 卡（挂 4 个引用）',
+    '└─ BOSS技能资源/BOSS名/              ← 普攻 / 战技 / BOSS战技 / 终结技',
+    '',
+    '设定一览.txt                     ← 全部设定速查（始终随包）'
+  ].join('\n');
+  const intro = {
+    char: ['还没有角色', '先建一张卡，右边会实时长出对应的 .tres 文本', '填唯一编号、卡牌名称、购买费用（1–5 决定商店档位）、命途与职业，再补羁绊与战斗数值。', '被动 / 普攻 / 战技 / 强化战技 / 精英战技 / 回响 / 终结技，每格输出一个独立资源。', '下载 ZIP 解压到项目根，按追加片段把卡登记进 角色总配置表.tres，重开项目生效。'],
+    mob:  ['还没有怪物', '怪物机制简单：普攻 + 战技，独特机制（亡语等）直接写在卡上', '填唯一编号、名称、生命 / 攻击 / 防御 / 速度。', '写独特机制：机制名称（如 亡语）+ 触发条件 + 效果说明，可写第二组。', '两个技能槽（普攻 / 战技）各出一份资源，生成后解压到位即可。'],
+    boss: ['还没有 BOSS', 'BOSS 比角色多一档：普攻 / 战技 / BOSS战技 / 终结技', '填唯一编号、名称、生命 / 攻击 / 防御 / 速度与独特机制。', '终结技不走充能：写「触发条件」和「触发后效果」，倍率段数照填。', '四个技能槽各出一份资源，生成后解压到位即可。']
+  }[v];
+  const act = v === 'char'
+    ? '<button class="btn" data-act="sample">看示例</button><button class="btn primary" data-act="add" data-kind="char">新建角色</button>'
+    : '<button class="btn primary" data-act="add" data-kind="' + v + '">新建' + kd.one + '</button>';
+  return '<div class="vh"><div><h2>' + intro[0] + '</h2><p>' + intro[1] + '</p></div>'
+    + '<div class="act">' + act + '</div></div>'
+    + '<div class="sec"><div class="sec-hd"><span class="idx">01</span><h3>三步开始</h3><span class="hint">和你写的流程一致</span></div>'
+    + '<div class="sec-bd"><div class="grid3">'
+    + step('STEP 1','建' + kd.one + '卡', intro[2])
+    + step('STEP 2','填' + kd.slots.length + ' 个槽位', intro[3])
+    + step('STEP 3','生成与登记', intro[4])
+    + '</div></div></div>'
+    + '<div class="sec"><div class="sec-hd"><span class="idx">02</span><h3>会生成什么</h3><span class="hint">路径与引用全部按 res:// 对齐</span></div>'
+    + '<pre class="code" style="flex:none;padding:14px;max-height:340px">' + esc(tree) + '</pre></div>'
+    + '<div class="note">角色、怪物、BOSS 三类可以混在一个项目里，生成时一次性打包；左上角分别新建。</div>';
+}
+function schemaGroup(key, title, tag){
+  const sc = state.schemas[key] || [];
+  const rows = sc.map(f=>
+    '<tr><td class="lb" title="' + esc(f.label) + '">' + esc(f.label) + (f.req?' <span style="color:var(--acc)">*</span>':'') + '</td>'
+    + '<td><input type="text" value="' + esc(f.prop) + '" data-sch="' + key + ':' + f.key + ':prop" spellcheck="false"></td>'
+    + '<td><select data-sch="' + key + ':' + f.key + ':type">'
+    + ['string','text','int','float','bool','enum','resource'].map(t=>
+        '<option value="' + t + '"' + (f.type===t?' selected':'') + '>' + t + '</option>').join('')
+    + '</select></td>'
+    + '<td style="text-align:center"><input type="checkbox" data-sch="' + key + ':' + f.key + ':on"' + (f.on?' checked':'') + '></td></tr>'
+  ).join('');
+  return '<details class="grp"' + (key==='card'?' open':'') + '><summary class="sum">' + ICON.file + ' '
+    + title + '<span class="tag">' + (tag||'') + '</span><span class="ar">▾</span></summary>'
+    + '<div class="tbl-wrap"><table class="tbl"><colgroup><col style="width:30%"><col style="width:38%"><col style="width:20%"><col style="width:12%"></colgroup>'
+    + '<thead><tr><th>字段</th><th>属性名（= 等号左边）</th><th>类型</th><th>启用</th></tr></thead><tbody>' + rows + '</tbody></table></div></details>';
+}
+function renderSchemaView(){
+  return '<div class="vh"><div><h2>字段映射</h2><p>左边是界面字段，中间是写进 .tres 的属性名 —— 必须和 .gd 里导出的变量名一字不差</p></div>'
+    + '<div class="act"><button class="btn" data-act="reset-schema">恢复默认</button></div></div>'
+    + '<div class="note w">默认按中文字段名生成。若你的脚本用 <strong>id / card_name / cost</strong> 之类的英文变量，'
+    + '在这里改成对应名字即可；也可以在「脚本与路径」页用 <strong>导入参考 .tres</strong> 一次性反推真实属性名。</div>'
+    + '<div class="vh" style="margin:6px 0 2px"><div><h2 style="font-size:15px">角色</h2><p>七槽角色卡</p></div></div>'
+    + schemaGroup('card','角色卡牌数据','角色卡')
+    + schemaGroup('passive','被动技能数据','被动')
+    + schemaGroup('normal','技能数据 · 普攻','普攻')
+    + schemaGroup('skill','技能数据 · 战技','战技槽')
+    + schemaGroup('skillPlus','技能数据 · 强化战技','强化战技槽')
+    + schemaGroup('skillElite','技能数据 · 精英战技','精英战技槽')
+    + schemaGroup('echo','回响数据','回响')
+    + schemaGroup('ult','终结技数据','终结技')
+    + '<div class="vh" style="margin:22px 0 2px"><div><h2 style="font-size:15px">怪物</h2><p>普攻 + 战技，独特机制写在卡上</p></div></div>'
+    + schemaGroup('mobCard','怪物卡牌数据','怪物卡（含两套机制）')
+    + '<div class="vh" style="margin:22px 0 2px"><div><h2 style="font-size:15px">BOSS</h2><p>普攻 + 战技 + BOSS战技 + 终结技（条件触发）</p></div></div>'
+    + schemaGroup('bossCard','Boss卡牌数据','BOSS卡（含两套机制）')
+    + schemaGroup('bossUlt','终结技数据 · BOSS','条件触发的终结技')
+    + '<div class="note">怪物的普攻 / 战技与角色共用 <strong>技能数据</strong> 那两张表：怪物和角色的技能本来就是一个脚本，改一次两边一致。</div>'
+    + '<div class="note">BOSS 终结技单独一张表：它是「触发条件 + 触发后效果」，不走充能，所以字段与角色的终结技不同。</div>'
+    + '<div class="note">战技 / 强化战技 / 精英战技是三个独立技能：各自一份资源文件、各自一套数值、各自一份字段映射。'
+    + '它们默认用同一个 <strong>技能数据</strong> 脚本，所以三张表初始内容相同；若你在项目里给它们拆了不同脚本，改哪张只影响哪一槽。</div>'
+    + '<div class="note">类型说明：<strong>string</strong> 带引号输出；<strong>int/float</strong> 裸数字；'
+    + '<strong>enum</strong> 默认按文本输出，开启「枚举按序号输出」后转成下标；<strong>resource</strong> 输出 ExtResource 引用。</div>';
+}
+function renderPathsView(){
+  const rows = ['card','mobCard','bossCard'].concat(ALL_SLOTS).map(k=>{
+    const s = state.scripts[k] || {};
+    const label = k==='card' ? '角色卡牌数据'
+      : k==='mobCard' ? '怪物卡牌数据'
+      : k==='bossCard' ? 'Boss卡牌数据'
+      : SLOT_DEF[k].label + '（' + SLOT_DEF[k].cls + '）';
+    return '<tr><td class="lb">' + label + '</td>'
+      + '<td><input type="text" value="' + esc(s.cls||'') + '" data-scr="' + k + ':cls" spellcheck="false"></td>'
+      + '<td><input type="text" value="' + esc(s.path||'') + '" data-scr="' + k + ':path" spellcheck="false" style="font-family:var(--mono);font-size:11.5px"></td></tr>';
+  }).join('');
+  const sw = (key, label, hint) =>
+    '<label class="switch"><input type="checkbox" data-cfg="' + key + '"' + (state[key]?' checked':'') + '><span class="track"></span>'
+    + '<span class="lb">' + label + '</span>' + (hint ? '<span class="fh" style="margin-left:4px">' + hint + '</span>' : '') + '</label>';
+
+  return '<div class="vh"><div><h2>脚本与路径</h2><p>生成的资源靠这些路径互相引用，改目录时同步改这里</p></div></div>'
+    + '<div class="sec"><div class="sec-hd"><span class="idx">A</span><h3>目录</h3><span class="hint">相对项目根，不带 res://</span></div><div class="sec-bd"><div class="grid2">'
+    + '<div class="fld"><label>角色卡目录</label><input type="text" value="' + esc(state.charDir) + '" data-cfg="charDir" spellcheck="false"></div>'
+    + '<div class="fld"><label>角色技能目录</label><input type="text" value="' + esc(state.skillDir) + '" data-cfg="skillDir" spellcheck="false"></div>'
+    + '<div class="fld"><label>怪物卡目录</label><input type="text" value="' + esc(state.mobDir) + '" data-cfg="mobDir" spellcheck="false"></div>'
+    + '<div class="fld"><label>怪物技能目录</label><input type="text" value="' + esc(state.mobSkillDir) + '" data-cfg="mobSkillDir" spellcheck="false"></div>'
+    + '<div class="fld"><label>BOSS 卡目录</label><input type="text" value="' + esc(state.bossDir) + '" data-cfg="bossDir" spellcheck="false"></div>'
+    + '<div class="fld"><label>BOSS 技能目录</label><input type="text" value="' + esc(state.bossSkillDir) + '" data-cfg="bossSkillDir" spellcheck="false"></div>'
+    + '</div><div class="note" style="margin-top:12px">怪物 / BOSS 的四个目录是占位，第一次用前按你项目里的实际目录改掉，否则生成的 res:// 引用会对不上。</div></div></div>'
+    + '<div class="sec"><div class="sec-hd"><span class="idx">B</span><h3>脚本路径</h3><span class="hint">script_class 对应 .gd 里的 class_name</span></div>'
+    + '<div class="tbl-wrap"><table class="tbl"><colgroup><col style="width:26%"><col style="width:26%"><col style="width:48%"></colgroup>'
+    + '<thead><tr><th>资源</th><th>script_class</th><th>脚本路径</th></tr></thead><tbody>' + rows + '</tbody></table></div></div>'
+    + '<div class="sec"><div class="sec-hd"><span class="idx">C</span><h3>生成选项</h3></div><div class="sec-bd" style="display:flex;flex-direction:column;gap:12px">'
+    + sw('fileWithChar','技能文件名带前缀','默认关：同目录内就是 被动.tres / 普攻.tres…')
+    + sw('zipWrap','压缩包外套一层项目文件夹','默认关：解压后直接落在 资源素材/ 下')
+    + sw('withDocs','附带说明与总表片段 txt','设定一览始终包含，这里额外加导入说明与追加片段')
+    + sw('enumAsIndex','命途·职业·枚举按序号输出','开启后写 int 下标，顺序取默认枚举表')
+    + sw('omitEmpty','空值字段不写入','留空 = 用脚本里的默认值')
+    + sw('writeScriptClass','写入 script_class 头','报类型找不到时关掉，只留 script 引用')
+    + '<div class="fld"><label>总表里的角色数组属性名</label><input type="text" value="' + esc(state.totalProp) + '" data-cfg="totalProp" spellcheck="false"></div>'
+    + '<div class="fld"><label>已有编号清单（每行/每逗号一个，用于查重）</label><textarea class="big" style="min-height:92px" data-cfg="existingIds" spellcheck="false" placeholder="kelan_001&#10;newchar_001">' + esc(state.existingIds) + '</textarea></div>'
+    + '</div></div>'
+    + '<div class="sec"><div class="sec-hd"><span class="idx">D</span><h3>导入参考 .tres</h3><span class="hint">反推属性名，避免手抄</span></div><div class="sec-bd">'
+    + '<div class="note">把项目里 <strong>已经能正常加载</strong> 的 .tres 原文粘贴进来（角色卡 / 怪物卡 / BOSS 卡 / 任一技能资源都行），'
+    + '工具会读出它的 script_class、脚本路径和全部属性名，并自动对齐到对应字段表。</div>'
+    + '<div class="grid2" style="margin-top:12px"><div class="fld"><label>粘贴到哪个分组</label><select id="refGroup">'
+    + '<option value="card">角色卡牌数据</option><option value="passive">被动技能数据</option><option value="normal">技能数据·普攻</option>'
+    + '<option value="skill">技能数据·战技</option><option value="skillPlus">技能数据·强化战技</option><option value="skillElite">技能数据·精英战技</option>'
+    + '<option value="echo">回响数据</option><option value="ult">终结技数据</option>'
+    + '<option value="mobCard">怪物卡牌数据</option><option value="bossCard">Boss卡牌数据</option><option value="bossUlt">BOSS终结技数据</option></select></div>'
+    + '<div class="fld"><label>&nbsp;</label><button class="btn" data-act="apply-ref">解析并应用</button></div></div>'
+    + '<textarea class="big" id="refText" style="margin-top:10px;min-height:140px" spellcheck="false" placeholder="[gd_resource type=&quot;Resource&quot; script_class=&quot;角色卡牌数据&quot; load_steps=2 format=3]&#10;&#10;[ext_resource type=&quot;Script&quot; path=&quot;res://...&quot; id=&quot;1_x&quot;]&#10;&#10;[resource]&#10;script = ExtResource(&quot;1_x&quot;)&#10;..."></textarea>'
+    + '<div id="refLog" class="note' + (state.refLast ? (state.refLast.ok ? '' : ' e') : '') + '" style="margin-top:10px;display:' + (state.refLast ? 'block' : 'none') + '">'
+    + (state.refLast ? state.refLast.msg : '') + '</div>'
+    + '</div></div>';
+}
+function totalResultHTML(){
+  if(!(state.totalMerge && String(state.totalExisting||'').trim())) return '';
+  try{
+    const r = mergeTotal(state.totalExisting, buildAll().cards);
+    let h = '<div class="prev-hd" style="border-top:1px solid var(--line)"><span class="pn">合并结果 · 新增 ' + r.added.length + ' 条</span>'
+      + '<button class="btn mini" data-act="copy-merge">复制</button></div>'
+      + '<pre class="code" style="max-height:420px;background:#0a0c0e">' + esc(r.text) + '</pre>';
+    if(r.warns.length) h += '<div class="note w" style="margin:10px 0 0">' + r.warns.map(esc).join('<br>') + '</div>';
+    return h;
+  }catch(err){
+    return '<div class="note e" style="margin-top:12px">合并失败：' + esc(err.message) + '</div>';
+  }
+}
+function updateTotalResult(){
+  const box = document.getElementById('totalResult');
+  if(box) box.innerHTML = totalResultHTML();
+}
+function renderTotalView(){
+  const all = buildAll();
+  const others = (all.byKind ? all.byKind.mob.concat(all.byKind.boss) : []);
+  return '<div class="vh"><div><h2>总配置表</h2><p>新角色必须进 角色总配置表.tres 的「所有角色」数组，图鉴/商店/羁绊才认</p></div></div>'
+    + '<div class="note e">不要用 脚本文件/工具脚本/合并角色配置表.gd 自动生成：它会扫描整个 人物卡牌资源 目录（含怪物卡），'
+    + '还会把 羁绊配置表.tres 覆盖成空模板。这里只处理卡，不碰羁绊表。</div>'
+    + '<div class="sec"><div class="sec-hd"><span class="idx">A</span><h3>登记片段</h3><span class="hint">手动贴三处，最安全</span></div>'
+    + '<div class="sec-bd" style="padding-bottom:0"><div class="note">按当前' + (state.totalAll ? '全部' : '角色') + '生成。压缩包默认<strong>不</strong>带这个 txt；要随包带走，在「脚本与路径」里打开「附带说明与总表片段」。</div>'
+    + '<label class="switch" style="margin-top:10px"><input type="checkbox" data-cfg="totalAll"' + (state.totalAll?' checked':'') + '>'
+    + '<span class="track"></span><span class="lb">总表也登记怪物 / BOSS</span>'
+    + '<span class="fh" style="margin-left:4px">默认关：怪物/BOSS 通常另有一张表</span></label></div>'
+    + '<div class="prev-hd" style="border-top:1px solid var(--line)"><span class="pn">角色总配置表_追加片段.txt</span>'
+    + '<button class="btn mini" data-act="copy-snippet">复制</button></div>'
+    + '<pre class="code" style="flex:none;max-height:300px">' + esc(all.cards.length
+        ? totalSnippet(all.cards)
+        : '# 目前没有' + (state.totalAll ? '' : '角色') + '卡，先新建一个再回来。\n# 角色总配置表.tres 的「'
+          + (state.totalProp || '所有角色') + '」数组没有要追加的条目。') + '</pre>'
+    + '</div>'
+    + (others.length && !state.totalAll
+      ? '<div class="sec"><div class="sec-hd"><span class="idx">A′</span><h3>怪物 / BOSS 片段</h3><span class="hint">如果它们另有一张表，贴那边</span></div>'
+        + '<div class="prev-hd"><span class="pn">怪物与BOSS_追加片段.txt</span>'
+        + '<button class="btn mini" data-act="copy-others">复制</button></div>'
+        + '<pre class="code" style="flex:none;max-height:240px">' + esc(totalSnippet(others, '# 你的 怪物 / BOSS 总配置表.tres')) + '</pre></div>'
+      : '')
+    + '<div class="sec"><div class="sec-hd"><span class="idx">B</span><h3>整份合并</h3><span class="hint">会输出完整文件，覆盖前先备份</span></div><div class="sec-bd">'
+    + '<label class="switch" style="margin-bottom:12px"><input type="checkbox" data-cfg="totalMerge"' + (state.totalMerge?' checked':'') + '>'
+    + '<span class="track"></span><span class="lb">启用合并，生成可直接替换的 角色总配置表.tres</span></label>'
+    + '<textarea class="big" id="totalText" data-cfg="totalExisting" spellcheck="false" placeholder="粘贴现有 资源素材/配置表格/角色总配置表.tres 的全部内容">' + esc(state.totalExisting) + '</textarea>'
+    + '</div><div id="totalResult">' + totalResultHTML() + '</div></div>';
+}
+function renderHelpView(){
+  return '<div class="vh"><div><h2>流程与说明</h2><p>这个工具只做「配置 → 文本」这一段，不替你跑 Godot</p></div></div>'
+    + '<div class="sec"><div class="sec-hd"><span class="idx">01</span><h3>标准流程</h3><span class="hint">对应你写的添加步骤</span></div><div class="sec-bd help">'
+    + '<ol><li>在左侧新建角色，填身份 / 羁绊 / 数值。</li>'
+    + '<li>展开 7 个技能槽，填名称、描述、倍率、段数。战技 / 强化战技 / 精英战技 是三个独立技能，各写各的名称与倍率，各出一份资源；槽位类名固定：被动 → 被动技能数据，普攻/战技/强化/精英 → 技能数据，回响 → 回响数据，终结技 → 终结技数据。</li>'
+    + '<li>点右上「生成并下载」，得到含 <code>人物卡牌资源/角色.tres</code> 与 <code>角色技能资源/角色/</code> 七件套的 zip，外加一份 <code>设定一览.txt</code>。</li>'
+    + '<li>解压到项目根，覆盖同名目录；按 <code>角色总配置表_追加片段.txt</code>（或在「总配置表」页整份合并）把卡登记进总表。</li>'
+    + '<li>重开项目，全局配置管理器加载总表，图鉴/商店/羁绊自动显示。</li></ol>'
+    + '<p>如果要一次加多个角色，就在左侧连续新建，最后一次性生成 —— 总表片段也会一并列好。</p>'
+    + '<p><code>设定一览.txt</code> 把当前所有实体（角色 / 怪物 / BOSS）的数值、机制与技能写成纯文本，随时可查（它只是速查稿，不会进项目）。</p></div></div>'
+    + '<div class="sec"><div class="sec-hd"><span class="idx">02</span><h3>怪物与 BOSS</h3><span class="hint">机制简单，但独特性要写清</span></div><div class="sec-bd help">'
+    + '<p><strong>怪物</strong>：只有 <code>普攻</code> 与 <code>战技</code> 两个槽，各出一份 技能数据。独特机制不单开资源，直接写在怪物卡上：'
+    + '「机制名称 + 触发条件 + 效果说明」，例如 亡语 / 死亡时 / 分裂为两个半血个体；第二组机制可选。</p>'
+    + '<p><strong>BOSS</strong>：四个槽 <code>普攻</code> / <code>战技</code> / <code>BOSS战技</code> / <code>终结技</code>。'
+    + '终结技<strong>不走充能</strong>，字段是「触发条件 + 触发后效果 + 倍率 + 段数」，条件用文字写（如「血量首次低于 30%」），'
+    + '不写死枚举，方便一个 BOSS 一个条件。</p>'
+    + '<p>怪物卡与 BOSS 卡走各自独立的资源类型（脚本类名与路径在「脚本与路径」页改）；'
+    + '普攻 / 战技沿用角色那两张 技能数据 的字段映射，两边同时生效。</p>'
+    + '<p>总表默认只登记角色；怪物 / BOSS 若另有表，在「总配置表」页会给出单独一段片段，复制到那张表即可。</p></div></div>'
+    + '<div class="sec"><div class="sec-hd"><span class="idx">03</span><h3>生成规则</h3></div><div class="sec-bd help">'
+    + '<p><code>load_steps</code> 按 ext_resource 数量自动算（ext + sub + 1），不用手改。</p>'
+    + '<p>字符串统一转义（引号、反斜杠、换行写成 <code>\\n</code>），描述可以写多行。</p>'
+    + '<p>普攻的伤害倍率字段默认关闭 —— 它的伤害固定 50%，倍率写了也无效。</p>'
+    + '<p>回响/终结技的能量与增伤走全局，只有倍率与段数写进资源；确实需要「能量消耗」时，在字段映射里把该字段启用。</p>'
+    + '<p>留空的可选字段默认不写入，脚本里的默认值就会生效。</p></div></div>'
+    + '<div class="sec"><div class="sec-hd"><span class="idx">04</span><h3>属性名对不上时</h3></div><div class="sec-bd help">'
+    + '<p>Godot 加载 .tres 时按属性名赋值：名字写错不会报错，而是<strong>静默丢掉</strong>那一行。'
+    + '所以第一次用之前，最稳的做法是拿一张现有 .tres（角色卡 / 怪物卡 / BOSS 卡都行）粘贴进「导入参考 .tres」，让工具把真实属性名对齐。</p>'
+    + '<p>另外注意：如果脚本里是 <code>@export var fate: Fate</code> 这种 <strong>强类型枚举</strong>，.tres 里存的是 int，'
+    + '请在「脚本与路径」里开启「枚举按序号输出」，下标顺序要和 .gd 里枚举声明一致。</p></div></div>';
+}
+
+/* ============================================================
+   六、输出面板
+   ============================================================ */
+let MODEL = { files: [], cards: [], chars: [] };
+let ISSUES = [];
+function highlight(text){
+  return text.split('\n').map(l=>{
+    if(/^\[/.test(l)) return '<span class="k">' + esc(l) + '</span>';
+    const i = l.indexOf(' = ');
+    if(i > 0){
+      const rhs = l.slice(i + 3);
+      let cls = 'n';
+      if(/^"/.test(rhs)) cls = 's';
+      else if(/^ExtResource/.test(rhs)) cls = 'k';
+      return esc(l.slice(0, i)) + ' <span class="c">=</span> <span class="' + cls + '">' + esc(rhs) + '</span>';
+    }
+    return esc(l);
+  }).join('\n');
+}
+function fileLabel(f){
+  const seg = f.path.split('/');
+  return seg[seg.length-1];
+}
+function renderAside(){
+  const el = $('#aside');
+  const errs = ISSUES.filter(i=>i.lv==='err').length;
+  const warns = ISSUES.filter(i=>i.lv==='warn').length;
+
+  let val = '';
+  if(!MODEL.files.length){
+    val = '<div class="val ok" style="color:var(--dim)">' + ICON.warn + ' 还没有角色，先新建或点「示例」</div>';
+  }else if(!ISSUES.length){
+    val = '<div class="val ok" style="color:var(--ok)">' + ICON.check + ' 校验通过，可以生成</div>';
+  }else{
+    val = '<div class="val">' + ISSUES.map(it=>{
+      const lv = it.lv === 'err' ? 'err' : 'warn';
+      const mark = it.lv === 'err' ? '×' : '!';
+      return '<div class="vitem ' + lv + '"><span class="dm"></span><span class="vt">'
+        + (it.who ? '<strong style="color:var(--txt)">' + esc(it.who) + '</strong>：' : '') + esc(it.msg) + '</span></div>';
+    }).join('') + '</div>';
+  }
+
+  const groups = {};
+  MODEL.files.forEach(f=>{
+    const dir = f.path.indexOf('/') >= 0 ? f.path.slice(0, f.path.lastIndexOf('/')) : '根目录';
+    (groups[dir] = groups[dir] || []).push(f);
+  });
+  let tree = '';
+  Object.keys(groups).forEach(dir=>{
+    tree += '<div class="tgroup" title="' + esc(dir) + '">' + esc(dir) + '</div>';
+    groups[dir].forEach(f=>{
+      const on = (state.previewPath === f.path) ? ' on' : '';
+      tree += '<div class="tnode' + on + '" data-file="' + esc(f.path) + '"><span class="ti">'
+        + (f.kind === 'card' ? ICON.char : (f.kind === 'skill' ? ICON.file : ICON.list)) + '</span>'
+        + '<span class="tp">' + esc(fileLabel(f)) + '</span><span class="ts">' + Math.ceil(f.text.length/1024) + 'k</span></div>';
+    });
+  });
+
+  const cur = MODEL.files.find(f=>f.path === state.previewPath) || MODEL.files[0];
+  const head = cur ? cur.path : '（无输出）';
+  const body = cur ? highlight(cur.text) : '';
+
+  el.innerHTML =
+    '<div class="as-hd"><span>输出</span><span class="cnt">' + MODEL.files.length + ' 文件 · ' + errs + ' 错误 · ' + warns + ' 提醒</span>'
+    + '<button class="btn mini" data-act="zip">ZIP</button></div>'
+    + val
+    + '<div class="tree">' + (tree || '<div class="tgroup">（还没有角色）</div>') + '</div>'
+    + '<div class="prev-hd"><span class="pn" title="' + esc(head) + '">' + esc(head) + '</span>'
+    + '<button class="btn mini" data-act="copy-file">复制</button></div>'
+    + '<pre class="code">' + body + '</pre>';
+}
+let refreshTimer = null;
+function refreshSoon(){
+  clearTimeout(refreshTimer);
+  refreshTimer = setTimeout(refresh, 180);
+}
+function refresh(){
+  MODEL = buildAll();
+  ISSUES = validateAll();
+  if(!MODEL.files.some(f=>f.path === state.previewPath)){
+    // 改名字会让路径变掉：优先留在当前实体里同名的那份，其次回到它的卡
+    const cur = state.chars[state.sel];
+    let pick = '';
+    if(cur){
+      const built = buildEntityFiles(cur);
+      const oldName = String(state.previewPath || '').split('/').pop();
+      const same = built.files.find(f=>f.path.split('/').pop() === oldName);
+      pick = same ? same.path : (built.files[0] ? built.files[0].path : '');
+    }
+    state.previewPath = pick || (MODEL.files[0] ? MODEL.files[0].path : '');
+  }
+  renderAside();
+  syncLive();
+  if(state.view === 'total') updateTotalResult();
+  saveSoon();
+}
+
+/* ============================================================
+   七、交互
+   ============================================================ */
+function toast(msg){
+  const t = $('#toast') || (function(){
+    const d = document.createElement('div');
+    d.id = 'toast';
+    d.style.cssText = 'position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:90;'
+      + 'padding:9px 16px;background:#1d222a;border:1px solid #3a4450;border-radius:3px;'
+      + 'font-size:12.5px;color:#e3e6ea;box-shadow:0 8px 24px rgba(0,0,0,.45);opacity:0;transition:opacity .2s;pointer-events:none;max-width:80vw';
+    document.body.appendChild(d);
+    return d;
+  })();
+  t.textContent = msg;
+  t.style.opacity = '1';
+  clearTimeout(t._h);
+  t._h = setTimeout(()=>{ t.style.opacity = '0'; }, 2600);
+}
+function copyText(text, label){
+  const done = ()=>toast((label||'已复制') + ' · ' + text.length + ' 字符');
+  if(navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(text).then(done).catch(()=>fallbackCopy(text, done));
+  }else fallbackCopy(text, done);
+}
+function fallbackCopy(text, done){
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand('copy'); done(); }catch(e){ toast('复制失败，请手动选中'); }
+  document.body.removeChild(ta);
+}
+function download(name, blob){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1200);
+}
+function focusEntity(i){
+  const c = state.chars[i];
+  if(!c) return;
+  state.sel = i;
+  state.view = c.kind || 'char';
+  const built = buildEntityFiles(c);
+  state.previewPath = built.files[0] ? built.files[0].path : '';
+  renderNav(); renderMain(); refresh();
+  const m = $('#main'); if(m) m.scrollTop = 0;
+}
+function selectChar(i){ focusEntity(i); }
+function addEntity(kind){
+  const k = KIND_DEF[kind] ? kind : 'char';
+  state.chars.push(newEntity(k));
+  focusEntity(state.chars.length - 1);
+  toast('已新建' + KIND_DEF[k].one + '，填写名称与编号');
+}
+function setPath(p, v){
+  const seg = p.split(':');
+  const c = state.chars[state.sel];
+  if(!c) return;
+  if(seg[0] === 'card') c.card[seg[1]] = v;
+  else if(seg[0] === 'skills'){ c.skills[seg[1]] = c.skills[seg[1]] || {}; c.skills[seg[1]][seg[2]] = v; }
+}
+function downloadZip(onlyIndex){
+  if(!state.chars.length){ toast('先新建角色 / 怪物 / BOSS，或点右上「示例」'); return; }
+  const fileList = onlyIndex !== undefined
+    ? (function(){
+        const ch = state.chars[onlyIndex];
+        const built = buildEntityFiles(ch);
+        const cards = [{ path: built.cardPath, name: safeName(ch.card.name), files: built.files, kind: ch.kind || 'char' }];
+        const fs = built.files.slice();
+        fs.push({ path:'设定一览.txt', text: settingsText([ch]), kind:'doc' });
+        if(state.withDocs){
+          fs.push({ path:'角色总配置表_追加片段.txt', text: totalSnippet(cards), kind:'doc' });
+          fs.push({ path:'导入说明.txt', text: readmeText(cards), kind:'doc' });
+        }
+        return { files: fs, cards };
+      })()
+    : buildAll();
+
+  const errs = ISSUES.filter(i=>i.lv==='err').length;
+  if(errs && !confirm('还有 ' + errs + ' 个错误（见右下角），仍要生成吗？')) return;
+  const base = (state.project || '痕域') + '角色配置';
+  const root = state.zipWrap ? base : null;
+  const blob = makeZip(fileList.files, root);
+  const name = base + (onlyIndex !== undefined ? '_' + fileList.cards[0].name : '') + '.zip';
+  download(name, blob);
+  toast('已生成 ' + fileList.files.length + ' 个文件 · ' + name);
+}
+async function writeToDir(){
+  if(!window.showDirectoryPicker){ toast('当前浏览器不支持目录写入，请用 ZIP'); return; }
+  try{
+    const root = await showDirectoryPicker({ mode:'readwrite' });
+    let n = 0;
+    for(const f of MODEL.files){
+      if(/_(追加片段|合并失败)\.txt$/.test(f.path) || f.path === '导入说明.txt') continue;
+      const segs = f.path.split('/');
+      let dir = root;
+      for(let i=0;i<segs.length-1;i++) dir = await dir.getDirectoryHandle(segs[i], { create:true });
+      const fh = await dir.getFileHandle(segs[segs.length-1], { create:true });
+      const w = await fh.createWritable();
+      await w.write(f.text); await w.close(); n++;
+    }
+    toast('已写入 ' + n + ' 个文件到所选目录');
+  }catch(err){
+    toast(err && err.name === 'SecurityError' ? '被浏览器拦下（file:// 不支持），请解压 ZIP' : ('写入失败：' + (err.message||err.name)));
+  }
+}
+
+function closeDrawers(){ document.body.classList.remove('show-nav','show-aside'); }
+
+/* 事件代理 */
+document.addEventListener('click', e=>{
+  if(e.target.id === 'scrim'){ closeDrawers(); return; }
+  const t = e.target.closest('[data-sel],[data-view],[data-act],[data-toggle],[data-file]');
+  if(!t) return;
+
+  if(t.dataset.sel !== undefined && !t.dataset.act){ selectChar(Number(t.dataset.sel)); closeDrawers(); return; }
+  if(t.dataset.view){ state.view = t.dataset.view; renderNav(); renderMain(); refresh(); $('#main').scrollTop = 0; closeDrawers(); return; }
+
+  if(t.dataset.toggle){
+    const slot = t.closest('.slot');
+    if(slot) slot.classList.toggle('closed');
+    return;
+  }
+  if(t.dataset.file){
+    state.previewPath = t.dataset.file;
+    renderAside();
+    return;
+  }
+
+  const act = t.dataset.act;
+  if(!act) return;
+  const c = state.chars[state.sel];
+  switch(act){
+    case 'add': addEntity(t.dataset.kind || 'char'); break;
+    case 'copy-char':
+      if(!c) break;
+      state.chars.push(Object.assign(JSON.parse(JSON.stringify(c)), { uid:'c'+Date.now().toString(36) }));
+      state.chars[state.chars.length-1].card.id = String(c.card.id||'') + '_copy';
+      state.sel = state.chars.length - 1;
+      state.view = c.kind || 'char';
+      renderNav(); renderMain(); refresh(); toast('已复制，记得改唯一编号');
+      break;
+    case 'del-char':
+      if(!c) break;
+      if(!confirm('删除「' + (c.card.name||('未命名' + (KIND_DEF[c.kind||'char']).one)) + '」？')) break;
+      state.chars.splice(state.sel, 1);
+      state.sel = Math.max(0, Math.min(state.sel, state.chars.length-1));
+      renderNav(); renderMain(); refresh(); toast('已删除');
+      break;
+    case 'export-one': downloadZip(state.sel); break;
+    case 'zip': downloadZip(); break;
+    case 'copy-file': {
+      const f = MODEL.files.find(x=>x.path===state.previewPath) || MODEL.files[0];
+      if(f) copyText(f.text, fileLabel(f));
+      break;
+    }
+    case 'copy-merge': {
+      try{ copyText(mergeTotal(state.totalExisting, buildAll().cards).text, '角色总配置表.tres'); }catch(err){ toast(err.message); }
+      break;
+    }
+    case 'copy-snippet':
+      copyText(totalSnippet(buildAll().cards), '追加片段');
+      break;
+    case 'copy-others': {
+      const all = buildAll();
+      copyText(totalSnippet((all.byKind ? all.byKind.mob.concat(all.byKind.boss) : []), '# 你的 怪物 / BOSS 总配置表.tres'), '怪物/BOSS 片段');
+      break;
+    }
+    case 'reset-schema':
+      if(!confirm('把字段映射恢复成默认（中文字段名）？')) break;
+      state.schemas = defaultSchemas(); renderMain(); refresh(); toast('已恢复默认映射');
+      break;
+    case 'apply-ref': applyReference(); break;
+    case 'sample': fillSample(); break;
+    case 'write-dir': writeToDir(); break;
+    case 'toggle-nav':
+      closeDrawers();
+      document.body.classList.add('show-nav');
+      break;
+    case 'toggle-aside':
+      closeDrawers();
+      document.body.classList.add('show-aside');
+      break;
+  }
+});
+
+document.addEventListener('input', e=>{
+  const el = e.target;
+  if(el.dataset.path){
+    setPath(el.dataset.path, el.value);
+    refreshSoon(); renderNavSoon();
+    return;
+  }
+  if(el.dataset.sch){
+    const [g, k, prop] = el.dataset.sch.split(':');
+    const sc = state.schemas[g];
+    const f = sc && sc.find(x=>x.key===k);
+    if(!f) return;
+    if(prop === 'on') f.on = el.checked;
+    else f[prop] = el.value;
+    // 改属性名会立刻反映到输出预览
+    refreshSoon();
+    return;
+  }
+  if(el.dataset.scr){
+    const [k, prop] = el.dataset.scr.split(':');
+    state.scripts[k][prop] = el.value;
+    refreshSoon();
+    return;
+  }
+  if(el.dataset.cfg){
+    const k = el.dataset.cfg;
+    state[k] = el.type === 'checkbox' ? el.checked : el.value;
+    saveSoon();
+    if(k === 'totalMerge'){ renderMain(); }
+    refreshSoon();
+    return;
+  }
+});
+document.addEventListener('change', e=>{
+  const el = e.target;
+  if(el.dataset.cfg === 'totalMerge'){ renderMain(); refresh(); }
+  if(el.dataset.cfg === 'totalAll'){ renderMain(); refresh(); }
+  if(['charDir','skillDir','mobDir','mobSkillDir','bossDir','bossSkillDir'].indexOf(el.dataset.cfg) >= 0){ refresh(); }
+});
+let navTimer = null;
+function renderNavSoon(){ clearTimeout(navTimer); navTimer = setTimeout(renderNav, 300); }
+
+/* 参考 .tres 解析 */
+function applyReference(){
+  const text = ($('#refText') || {}).value || '';
+  const group = ($('#refGroup') || {}).value || 'card';
+  const log = $('#refLog');
+  const show = (msg, ok)=>{
+    state.refLast = { msg: msg, ok: !!ok };
+    const box = $('#refLog');
+    if(box){
+      box.style.display = 'block';
+      box.className = 'note ' + (ok ? '' : 'e');
+      box.innerHTML = msg;
+    }
+  };
+  if(!text.trim()){ show('先粘贴一段 .tres 原文。', false); return; }
+  const head = text.match(/script_class="([^"]+)"/);
+  const scriptPath = text.match(/\[ext_resource type="Script"[^\]]*path="([^"]+)"/);
+  const body = text.split(/^\[resource\]\s*$/m)[1] || '';
+  if(!body.trim()){ show('没找到 [resource] 段，确认粘贴的是 .tres 全文。', false); return; }
+
+  const keys = [];
+  body.split('\n').forEach(line=>{
+    const m = line.match(/^\s*([^\s=][^=]*?)\s*=\s*(.*)$/);
+    if(m && m[1] !== 'script') keys.push(m[1].trim());
+  });
+
+  const sc = state.schemas[group] || [];
+  let hit = 0, bySyn = 0;
+  const used = new Set();
+  const unmatched = [];
+  keys.forEach(k=>{
+    const f = sc.find(x=>x.type !== 'resource' && !used.has(x.key) && (x.prop === k || x.label === k));
+    if(f){ f.prop = k; used.add(f.key); hit++; }
+    else unmatched.push(k);
+  });
+  // 英文变量名按常见同义词兜底匹配（id / hp / atk / crit_rate …）
+  const left = [];
+  unmatched.forEach(k=>{
+    const nk = k.toLowerCase().replace(/\s/g,'');
+    const cand = SYN[nk] || SYN[nk.replace(/_/g,'')] || [];
+    let done = false;
+    for(const lab of cand){
+      const f = sc.find(x=>x.type !== 'resource' && !used.has(x.key) && x.label === lab);
+      if(f){ f.prop = k; used.add(f.key); hit++; bySyn++; done = true; break; }
+    }
+    if(!done) left.push(k);
+  });
+  // 只有当参考字段数与剩余字段数完全一致时才按顺序对齐（导出顺序通常一致）
+  if(left.length && hit < Math.min(keys.length, sc.length) * 0.5){
+    const targets = sc.filter(f=>f.type !== 'resource' && !used.has(f.key));
+    if(left.length === targets.length){
+      targets.forEach((f,i)=>{ f.prop = left[i]; used.add(f.key); hit++; });
+      left.length = 0;
+    }
+  }
+  const cardGroups = { card:'card', mobCard:'mobCard', bossCard:'bossCard' };
+  if(cardGroups[group]){
+    const sk = cardGroups[group];
+    if(head) state.scripts[sk].cls = head[1];
+    if(scriptPath) state.scripts[sk].path = scriptPath[1];
+  }else{
+    if(head) ALL_SLOTS.forEach(k=>{ if(SLOT_DEF[k].sk === group) state.scripts[k].cls = head[1]; });
+    if(scriptPath) ALL_SLOTS.forEach(k=>{ if(SLOT_DEF[k].sk === group) state.scripts[k].path = scriptPath[1]; });
+  }
+
+  show('识别到 ' + keys.length + ' 个属性：<br><span class="mono-sm">' + esc(keys.join(' · ')) + '</span><br>已对齐 '
+    + hit + ' 个字段' + (bySyn ? '（其中 ' + bySyn + ' 个按英文同义词推断，建议核对）' : '')
+    + (left.length ? '<br>未匹配，请手动改名：' + esc(left.join(' · ')) : '')
+    + '<br>script_class：' + esc(head ? head[1] : '—') + '　脚本：' + esc(scriptPath ? scriptPath[1] : '—'), true);
+  renderMain(); refresh();
+  toast('字段映射已按参考文件对齐');
+}
+
+/* 示例填充 */
+function fillSample(){
+  let c = state.chars.find(x=>(x.kind || 'char') === 'char');
+  if(!c){ c = newEntity('char'); state.chars.unshift(c); }
+  c.kind = 'char';
+  c.card = {
+    id:'kelan_001', name:'蚀灯者·柯兰', cost:3, fate:'烬残', class:'猎迹者',
+    bondFaction:'忆守庭', bondJob1:'追刃者', bondJob2:'烬谛者',
+    clash:'1.2', hp:'4200', def:'240', atk:'310', spd:'102',
+    critRate:'0.15', critDmg:'1.5', effHit:'0.30', resist:'0.20', erg:'1.0', emax:'120'
+  };
+  c.skills = {
+    passive: { name:'灰烬回燃', desc:'每回合第一次交锋胜利后，回复 8% 已损失生命，并获得 1 层「余烬」。', trigger:'交锋胜利' },
+    normal: { name:'削灯', desc:'挥刀削向对手的灯芯，造成 50% 攻击力的伤害。' },
+    skill: { name:'燃灯式', desc:'点燃自身残灯，对单体造成 140% 攻击力伤害，并附加 2 回合灼痕。', ratio:'1.4' },
+    skillPlus: { name:'燃灯式·溢', desc:'残灯过载，溢出的火光沿刀脊铺开，造成 200% 攻击力伤害，灼痕层数翻倍。', ratio:'2.0' },
+    skillElite: { name:'焚脊', desc:'以脊骨为薪，对单体造成 260% 攻击力伤害，并对相邻目标溅射 40%。', ratio:'2.6' },
+    echo: { name:'余火低鸣', desc:'三段余火独立结算，命中同一目标时每段倍率递减 10%。', ratio:'0.8', hits:'3' },
+    ult: { name:'焚灯长夜', desc:'倾尽灯火，对全体造成 320% 攻击力伤害，自身进入枯竭状态。', ratio:'3.2', hits:'1' }
+  };
+  state.sel = state.chars.indexOf(c);
+  state.view = 'char';
+  renderNav(); renderMain(); refresh();
+  toast('已填入示例角色，可直接对照输出');
+}
+
+/* 顶栏按钮 */
+$('#projName').addEventListener('input', e=>{ state.project = e.target.value; saveSoon(); });
+$('#btnSample').addEventListener('click', fillSample);
+$('#btnExport').addEventListener('click', ()=>{
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type:'application/json' });
+  download((state.project||'痕域') + '_角色配置草稿.json', blob);
+  toast('草稿已导出');
+});
+$('#btnImport').addEventListener('click', ()=>{ $('#fileIn').click(); });
+$('#fileIn').addEventListener('change', e=>{
+  const f = e.target.files && e.target.files[0];
+  if(!f) return;
+  const fr = new FileReader();
+  fr.onload = ()=>{
+    try{
+      const data = JSON.parse(fr.result);
+      state = hydrate(data);
+      if(state.view !== 'char') state.view = 'char';
+      $('#projName').value = state.project || '痕域';
+      renderNav(); renderMain(); refresh(); save();
+      toast('已导入：' + state.chars.length + ' 个角色');
+    }catch(err){ toast('导入失败：不是有效的草稿文件'); }
+  };
+  fr.readAsText(f);
+  e.target.value = '';
+});
+$('#btnGen').addEventListener('click', ()=>downloadZip());
+
+/* 启动 */
+(function init(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if(raw) state = hydrate(JSON.parse(raw));
+    else state = hydrate(defaultState());
+  }catch(e){ state = hydrate(defaultState()); }
+  $('#projName').value = state.project || '痕域';
+  renderNav();
+  renderMain();
+  refresh();
+  if(!localStorage.getItem(STORE_KEY + '_seen')){
+    localStorage.setItem(STORE_KEY + '_seen','1');
+    setTimeout(()=>toast('左边新建角色，右边实时预览 .tres；先点「示例」可看完整效果'), 700);
+  }
+})();
+window.addEventListener('beforeunload', save);
+</script>
+</body>
+</html>
+<!-- （注：内容由AI生成） -->
